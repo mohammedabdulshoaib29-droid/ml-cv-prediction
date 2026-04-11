@@ -11,10 +11,10 @@ function ReferencesSection() {
           <div className="reference-card">
             <h3>Tools & Libraries</h3>
             <ul>
-              <li><a href="https://scikit-learn.org/">Scikit-learn</a></li>
-              <li><a href="https://xgboost.readthedocs.io/">XGBoost</a></li>
-              <li><a href="https://www.tensorflow.org/">TensorFlow</a></li>
-              <li><a href="https://pandas.pydata.org/">Pandas</a></li>
+              <li><a href="https://scikit-learn.org/">Scikit-learn (ANN, RF, Preprocessing)</a></li>
+              <li><a href="https://xgboost.readthedocs.io/">XGBoost (Gradient Boosting)</a></li>
+              <li><a href="https://numpy.org/">NumPy (Numerical Computing)</a></li>
+              <li><a href="https://pandas.pydata.org/">Pandas (Data Processing)</a></li>
             </ul>
           </div>
 
