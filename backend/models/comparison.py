@@ -84,26 +84,44 @@ def run_all_models(train_df, test_df):
     best_cap = model_caps[best_model]
 
     # ==============================
-    # BEST MODEL DATA (Dynamic)
+    # ENERGY & POWER DENSITY (NEW)
     # ==============================
-    best_model_data = {
-        "ANN": ann,
-        "RF": rf,
-        "TNN": xgb
-    }[best_model]
+    try:
+        delta_V = test_df["Potential"].max() - test_df["Potential"].min()
+        if delta_V > 0:
+            energy_density = 0.5 * best_cap * (delta_V ** 2) / 3600
+            power_density = energy_density * 3600
+        else:
+            energy_density = 0
+            power_density = 0
+    except:
+        energy_density = 0
+        power_density = 0
 
     # ==============================
-    # DOPANT OPTIMIZATION
+    # GRAPHS FOR ALL MODELS (FIXED)
     # ==============================
-    zn_ratio = train_df["ZN"].mean()
-    co_ratio = train_df["CO"].mean()
+    all_graphs = {
+        "ANN": ann["graph"],
+        "RF": rf["graph"],
+        "XGB": xgb["graph"]
+    }
 
-    if zn_ratio > 0.7:
+
+    # ==============================
+    # DOPANT OPTIMIZATION (FIXED)
+    # ==============================
+    has_zn = train_df["ZN"].sum() > 0
+    has_co = train_df["CO"].sum() > 0
+
+    if has_zn and not has_co:
         best_dopant = "Zn (Zinc)"
-    elif co_ratio > 0.7:
+    elif has_co and not has_zn:
         best_dopant = "Co (Cobalt)"
-    else:
+    elif has_zn and has_co:
         best_dopant = "Zn/Co (Mixed)"
+    else:
+        best_dopant = "None"
 
     # ==============================
     # MODEL PERFORMANCE TABLE
@@ -162,7 +180,9 @@ def run_all_models(train_df, test_df):
         "best_dopant": best_dopant,
         "best_concentration": float(best_model_data["best_concentration"]),
         "capacitance": float(best_cap),
-        "graph": best_model_data["graph"],
+        "energy_density": float(energy_density),
+        "power_density": float(power_density),
+        "graphs": all_graphs,
         "table": table,
         "recommendations": recommendations
     }
