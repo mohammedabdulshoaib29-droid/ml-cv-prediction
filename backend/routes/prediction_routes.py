@@ -5,10 +5,28 @@ from utils.evaluation import ModelEvaluator
 from models.ml_models import MLModels
 import numpy as np
 import tempfile
+import json
 
 router = APIRouter()
 
 DATASETS_DIR = Path("datasets")
+
+def convert_numpy_to_python(obj):
+    """Convert numpy types to Python native types for JSON serialization"""
+    if isinstance(obj, dict):
+        return {k: convert_numpy_to_python(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [convert_numpy_to_python(item) for item in obj]
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, (np.floating, np.integer)):
+        return float(obj) if isinstance(obj, np.floating) else int(obj)
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    elif isinstance(obj, (float, int, str, bool, type(None))):
+        return obj
+    else:
+        return str(obj)
 
 @router.post("/predict")
 async def predict(
@@ -106,6 +124,8 @@ async def predict(
             if importance:
                 results["feature_importance"] = importance
             
+            # Convert numpy types to Python native types for JSON serialization
+            results = convert_numpy_to_python(results)
             return results
         
         finally:
