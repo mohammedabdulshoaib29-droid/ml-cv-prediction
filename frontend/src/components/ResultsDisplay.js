@@ -1,5 +1,6 @@
 import React from 'react';
 import { ClipLoader } from 'react-spinners';
+import CVGraph from './CVGraph';
 import PredictionGraphs from './PredictionGraphs';
 import '../styles/ResultsDisplay.css';
 
@@ -52,6 +53,8 @@ const ResultsDisplay = ({ results, loading, error }) => {
         <p><strong>Training Dataset:</strong> {results.training_dataset}</p>
         <p><strong>Test Samples:</strong> {results.test_samples}</p>
       </div>
+
+      <CVGraph predictions={Object.values(results.models).flatMap(m => m.predictions || [])} />
 
       <div className="models-grid">
         {Object.entries(results.models).map(([modelName, data]) => (
