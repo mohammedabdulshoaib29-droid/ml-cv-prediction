@@ -9,7 +9,8 @@ cd ..
 
 echo "=== Installing Backend Dependencies ==="
 cd backend
-pip install --upgrade pip
+pip install --upgrade pip setuptools wheel
+pip install gunicorn
 pip install -r requirements.txt --no-cache-dir
 cd ..
 
