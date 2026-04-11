@@ -15,14 +15,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  width: 100%;
 }
 
-.architecture-box {
+.diagram-image {
+  max-width: 100%;
+  height: auto;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(100, 200, 255, 0.2);
+}
+
+.diagram-box {
   background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(77, 184, 255, 0.05) 100%);
   border: 2px solid #64c8ff;
   padding: 1.5rem 2rem;

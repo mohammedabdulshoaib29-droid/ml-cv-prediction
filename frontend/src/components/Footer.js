@@ -24,9 +24,7 @@ function Footer() {
 
       </div>
 
-      <div className="footer-bottom">
-        <p>Built with ❤️ for Materials Scientists & Engineers</p>
-      </div>
+
     </footer>
   );
 }

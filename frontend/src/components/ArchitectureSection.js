@@ -6,33 +6,10 @@ function ArchitectureSection() {
     <section id="architecture" className="architecture">
       <div className="architecture-container">
         <h2>Architecture</h2>
-        <p className="section-subtitle">Multi-Model Ensemble Architecture for CV Prediction</p>
+        <p className="section-subtitle">Combined Machine Learning Architecture for Predicting Electrochemical Performance of Supercapacitor Materials</p>
         
         <div className="architecture-diagram">
-          <div className="diagram-box">
-            <h3>📊 Input Data</h3>
-            <p>CV Dataset Files</p>
-            <p>(Excel, CSV)</p>
-          </div>
-          
-          <div className="arrow">→</div>
-          
-          <div className="diagram-box">
-            <h3>🔄 Preprocessing</h3>
-            <p>Feature Extraction</p>
-            <p>Normalization</p>
-          </div>
-          
-          <div className="arrow">→</div>
-          
-          <div className="diagram-box">
-            <h3>🤖 Model Ensemble</h3>
-            <p>XGBoost</p>
-            <p>TensorFlow</p>
-            <p>Random Forest</p>
-          </div>
-          
-          <div className="arrow">→</div>
+          <img src="/images/architecture-diagram.png" alt="Machine Learning Architecture Diagram" className="diagram-image" />
           
           <div className="diagram-box">
             <h3>📈 Output</h3>

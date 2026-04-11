@@ -7,7 +7,7 @@ function Header() {
       <div className="header-container">
         <div className="logo">
           <h1>🔬 CV Prediction</h1>
-          <p>ZN/CO Substituted BiFe<sub>0</sub>O₃</p>
+          <p>ZN/CO Substituted BiFe<sub>2</sub>O<sub>3</sub></p>
         </div>
         <nav className="navbar">
           <ul>
