@@ -1,0 +1,145 @@
+/* Inference Section */
+.inference {
+  padding: 4rem 2rem;
+  background: linear-gradient(180deg, rgba(77, 184, 255, 0.05) 0%, transparent 100%);
+}
+
+.inference h2 {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #64c8ff;
+}
+
+.inference-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(77, 184, 255, 0.03) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  color: #64c8ff;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-control, select, input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.form-control:focus, select:focus, input[type="file"]:focus {
+  border-color: #64c8ff;
+  box-shadow: 0 0 10px rgba(100, 200, 255, 0.2);
+  outline: none;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+  cursor: pointer;
+}
+
+.radio-option label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #64c8ff, #4db8ff);
+  color: #0f0f1e;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 1rem;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(100, 200, 255, 0.3);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.results-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.results-container h3 {
+  color: #64c8ff;
+  margin-bottom: 1rem;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-label {
+  color: #aaa;
+}
+
+.result-value {
+  color: #64c8ff;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .inference h2 {
+    font-size: 1.8rem;
+  }
+
+  .inference-container {
+    padding: 1rem;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

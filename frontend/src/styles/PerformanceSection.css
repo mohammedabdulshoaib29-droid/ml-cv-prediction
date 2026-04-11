@@ -1,0 +1,101 @@
+/* Performance Section */
+.performance {
+  padding: 4rem 2rem;
+  background-color: #1a1a2e;
+}
+
+.performance h2 {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #64c8ff;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(77, 184, 255, 0.03) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.metric-card:hover {
+  border-color: #64c8ff;
+  box-shadow: 0 10px 30px rgba(100, 200, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.metric-card h3 {
+  color: #64c8ff;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  color: #64c8ff;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.metric-desc {
+  color: #aaa;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.training-config {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.05) 0%, rgba(77, 184, 255, 0.02) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 1200px;
+  margin: 2rem auto;
+}
+
+.training-config h3 {
+  color: #64c8ff;
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.config-label {
+  color: #64c8ff;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.config-value {
+  color: #ccc;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .performance h2 {
+    font-size: 1.8rem;
+  }
+
+  .metrics-grid {
+    gap: 1rem;
+  }
+}

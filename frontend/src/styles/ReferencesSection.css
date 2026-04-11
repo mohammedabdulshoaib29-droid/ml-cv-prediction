@@ -1,0 +1,93 @@
+/* References Section */
+.references {
+  padding: 4rem 2rem;
+  background-color: #1a1a2e;
+}
+
+.references h2 {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #64c8ff;
+}
+
+.references-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.reference-card {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(77, 184, 255, 0.03) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  padding: 2rem;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.reference-card:hover {
+  border-color: #64c8ff;
+  box-shadow: 0 12px 40px rgba(100, 200, 255, 0.2);
+  transform: translateY(-6px);
+}
+
+.reference-card h3 {
+  color: #64c8ff;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.reference-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reference-item {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.reference-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.reference-item a {
+  color: #64c8ff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  word-break: break-word;
+}
+
+.reference-item a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.ref-title {
+  display: block;
+  color: #ccc;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .references h2 {
+    font-size: 1.8rem;
+  }
+
+  .references-grid {
+    gap: 1rem;
+  }
+
+  .reference-card {
+    padding: 1.5rem;
+  }
+}

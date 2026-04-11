@@ -1,0 +1,62 @@
+/* Overview Section */
+.overview {
+  padding: 4rem 2rem;
+  background-color: #1a1a2e;
+}
+
+.overview h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #64c8ff;
+}
+
+.overview-description {
+  max-width: 900px;
+  margin: 0 auto 3rem;
+  line-height: 1.8;
+  color: #ccc;
+}
+
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.highlight-card {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.05) 0%, rgba(77, 184, 255, 0.02) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  padding: 2rem;
+  border-radius: 12px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.highlight-card:hover {
+  border-color: #64c8ff;
+  box-shadow: 0 8px 24px rgba(100, 200, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.highlight-card h3 {
+  color: #64c8ff;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.highlight-card p {
+  color: #aaa;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .overview h2 {
+    font-size: 1.8rem;
+  }
+
+  .highlights {
+    gap: 1rem;
+  }
+}
