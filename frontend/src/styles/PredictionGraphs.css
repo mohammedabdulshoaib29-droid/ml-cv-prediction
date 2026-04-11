@@ -48,6 +48,26 @@
   animation: fadeIn 0.3s ease-in;
 }
 
+.cv-graphs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.model-cv-graph {
+  background: rgba(15, 15, 30, 0.7);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.model-cv-graph h5 {
+  color: #64c8ff;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

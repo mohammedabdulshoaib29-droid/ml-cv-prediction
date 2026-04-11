@@ -23,97 +23,138 @@ const ResultsDisplay = ({ results, loading, error }) => {
     );
   }
 
-  if (!results || !results.models) {
+  if (!results || (!results.models && !results.graphs)) {
     return null;
   }
 
-  const downloadCSV = () => {
-    let csv = 'Model,Predictions\n';
-    Object.entries(results.models).forEach(([modelName, data]) => {
-      if (data.all_predictions) {
-        csv += `${modelName},${data.all_predictions.join(',')}\n`;
-      }
-    });
+  const isCV = results.is_cv_analysis || results.graphs;
 
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
-    element.setAttribute('download', 'predictions.csv');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+  const downloadCSV = () => {
+    if (isCV) {
+      // For CV analysis, download the table data
+      let csv = 'Model,R²,RMSE,Capacitance,Best Concentration\n';
+      if (results.table) {
+        results.table.forEach(row => {
+          csv += `"${row.model}",${row.r2},${row.rmse},${row.capacitance},${row.best_concentration}\n`;
+        });
+      }
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+      element.setAttribute('download', 'cv_analysis.csv');
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } else {
+      // For general predictions
+      let csv = 'Model,Predictions\n';
+      Object.entries(results.models).forEach(([modelName, data]) => {
+        if (data.all_predictions) {
+          csv += `${modelName},${data.all_predictions.join(',')}\n`;
+        }
+      });
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+      element.setAttribute('download', 'predictions.csv');
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
   };
 
   return (
     <div className="results-container">
-      <h2>Prediction Results</h2>
+      <h2>{isCV ? '🔬 CV Analysis Results' : 'Prediction Results'}</h2>
       
       <div className="results-info">
-        <p><strong>Task Type:</strong> {results.task_type}</p>
+        {results.task_type && <p><strong>Task Type:</strong> {results.task_type}</p>}
         <p><strong>Training Dataset:</strong> {results.training_dataset}</p>
         <p><strong>Test Samples:</strong> {results.test_samples}</p>
+        {isCV && results.best_model && <p><strong>Best Model:</strong> {results.best_model}</p>}
+        {isCV && results.best_dopant && <p><strong>Recommended Dopant:</strong> {results.best_dopant}</p>}
+        {isCV && results.capacitance && <p><strong>Capacitance:</strong> {parseFloat(results.capacitance.toFixed(2))} F/g</p>}
       </div>
 
-      <CVGraph predictions={Object.values(results.models).flatMap(m => m.predictions || [])} />
+      {!isCV && <CVGraph predictions={Object.values(results.models || {}).flatMap(m => m.predictions || [])} />}
 
-      <div className="models-grid">
-        {Object.entries(results.models).map(([modelName, data]) => (
-          <div key={modelName} className="model-card">
-            <h3>{modelName.toUpperCase()}</h3>
-            
-            {data.accuracy !== undefined && (
-              <div className="metric">
-                <label>Accuracy:</label>
-                <span className="value">{parseFloat(data.accuracy.toFixed(4))}</span>
-              </div>
-            )}
-            
-            {data.rmse !== undefined && (
-              <div className="metric">
-                <label>RMSE:</label>
-                <span className="value">{parseFloat(data.rmse.toFixed(4))}</span>
-              </div>
-            )}
-            
-            {data.mae !== undefined && (
-              <div className="metric">
-                <label>MAE:</label>
-                <span className="value">{parseFloat(data.mae.toFixed(4))}</span>
-              </div>
-            )}
+      {isCV && results.table ? (
+        <div className="cv-table">
+          <h3>Model Performance Comparison</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>R² Score</th>
+                <th>RMSE</th>
+                <th>Capacitance (F/g)</th>
+                <th>Best Concentration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.table.map((row, idx) => (
+                <tr key={idx}>
+                  <td>{row.model}</td>
+                  <td>{parseFloat(row.r2.toFixed(4))}</td>
+                  <td>{parseFloat(row.rmse.toFixed(4))}</td>
+                  <td>{parseFloat(row.capacitance.toFixed(2))}</td>
+                  <td>{parseFloat(row.best_concentration.toFixed(4))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : !isCV && results.models ? (
+        <div className="models-grid">
+          {Object.entries(results.models).map(([modelName, data]) => (
+            <div key={modelName} className="model-card">
+              <h3>{modelName.toUpperCase()}</h3>
+              
+              {data.accuracy !== undefined && (
+                <div className="metric">
+                  <label>Accuracy:</label>
+                  <span className="value">{parseFloat(data.accuracy.toFixed(4))}</span>
+                </div>
+              )}
+              
+              {data.rmse !== undefined && (
+                <div className="metric">
+                  <label>RMSE:</label>
+                  <span className="value">{parseFloat(data.rmse.toFixed(4))}</span>
+                </div>
+              )}
+              
+              {data.mae !== undefined && (
+                <div className="metric">
+                  <label>MAE:</label>
+                  <span className="value">{parseFloat(data.mae.toFixed(4))}</span>
+                </div>
+              )}
 
-            {data.r2_score !== undefined && (
-              <div className="metric">
-                <label>R² Score:</label>
-                <span className="value">{parseFloat(data.r2_score.toFixed(4))}</span>
-              </div>
-            )}
+              {data.r2_score !== undefined && (
+                <div className="metric">
+                  <label>R² Score:</label>
+                  <span className="value">{parseFloat(data.r2_score.toFixed(4))}</span>
+                </div>
+              )}
 
-            {data.predictions && data.predictions.length > 0 && (
-              <div className="predictions">
-                <label>Sample Predictions (First 10):</label>
-                <ul>
-                  {data.predictions.map((pred, idx) => (
-                    <li key={idx}>{parseFloat(pred.toFixed(4))}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              {data.predictions && data.predictions.length > 0 && (
+                <div className="predictions">
+                  <label>Sample Predictions (First 10):</label>
+                  <ul>
+                    {data.predictions.map((pred, idx) => (
+                      <li key={idx}>{parseFloat(pred.toFixed(4))}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-            <div className={`status ${data.training_status === 'trained' ? 'success' : 'error'}`}>
-              Status: {data.training_status}
+              <div className={`status ${data.training_status === 'trained' ? 'success' : 'error'}`}>
+                Status: {data.training_status}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={downloadCSV} className="download-btn">
-        📥 Download Predictions as CSV
-      </button>
-
-      <PredictionGraphs results={results} />
-    </div>
-  );
-};
+          ))}
+        </div>
+      ) : null}
 
 export default ResultsDisplay;

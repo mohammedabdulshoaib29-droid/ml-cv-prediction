@@ -9,9 +9,12 @@ import '../styles/PredictionGraphs.css';
 const PredictionGraphs = ({ results }) => {
   const [activeTab, setActiveTab] = useState('comparison');
 
-  if (!results || !results.models) {
+  if (!results || (!results.models && !results.graphs)) {
     return null;
   }
+
+  // Check if this is CV analysis with graphs
+  const hasGraphs = results.graphs && typeof results.graphs === 'object';
 
   // Prepare data for actual vs predicted graph
   const prepareComparisonData = () => {
@@ -75,6 +78,14 @@ const PredictionGraphs = ({ results }) => {
       <h3>📊 Visualization & Analysis</h3>
       
       <div className="graph-tabs">
+        {hasGraphs && (
+          <button 
+            className={`graph-tab ${activeTab === 'cv-graphs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cv-graphs')}
+          >
+            🔬 CV Curves
+          </button>
+        )}
         <button 
           className={`graph-tab ${activeTab === 'comparison' ? 'active' : ''}`}
           onClick={() => setActiveTab('comparison')}
@@ -102,6 +113,58 @@ const PredictionGraphs = ({ results }) => {
       </div>
 
       <div className="graph-content">
+        {hasGraphs && activeTab === 'cv-graphs' && (
+          <div className="graph-container">
+            <h4>CV Curve Analysis - All Models</h4>
+            <p className="graph-description">
+              Cyclic Voltammetry curves for each model with current vs. potential response
+            </p>
+            <div className="cv-graphs-grid">
+              {Object.entries(results.graphs).map(([modelName, graphData]) => (
+                <div key={modelName} className="model-cv-graph">
+                  <h5>{modelName}</h5>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={graphData || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                      <XAxis 
+                        dataKey="voltage" 
+                        stroke="#aaa"
+                        label={{ value: 'Potential (V)', position: 'insideBottomRight', offset: -5 }}
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis 
+                        stroke="#aaa"
+                        label={{ value: 'Current (mA)', angle: -90, position: 'insideLeft' }}
+                        tick={{ fontSize: 12 }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #64c8ff' }}
+                        labelStyle={{ color: '#64c8ff' }}
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="forwardCurrent" 
+                        stroke="#64c8ff" 
+                        dot={false}
+                        strokeWidth={2}
+                        name="Forward Scan"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="reverseCurrent" 
+                        stroke="#00d4ff" 
+                        dot={false}
+                        strokeWidth={2}
+                        name="Reverse Scan"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {activeTab === 'comparison' && (
           <div className="graph-container">
             <h4>Prediction Values (First 50 Samples)</h4>

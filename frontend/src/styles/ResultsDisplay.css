@@ -172,3 +172,47 @@
 .error-container p {
   color: #ff7777;
 }
+
+.cv-table {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.cv-table h3 {
+  color: #64c8ff;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.cv-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(15, 15, 30, 0.6);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cv-table thead {
+  background: rgba(100, 200, 255, 0.2);
+}
+
+.cv-table th, .cv-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+  color: #ddd;
+}
+
+.cv-table th {
+  color: #64c8ff;
+  font-weight: 600;
+}
+
+.cv-table tbody tr:hover {
+  background: rgba(100, 200, 255, 0.1);
+}
+
+.cv-table tbody tr:last-child td {
+  border-bottom: none;
+}
