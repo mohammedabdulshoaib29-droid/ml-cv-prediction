@@ -1,0 +1,416 @@
+/* Capacitor Metrics Component */
+.capacitor-metrics {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(77, 184, 255, 0.03) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  border-radius: 12px;
+}
+
+.metrics-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid rgba(100, 200, 255, 0.3);
+  background: transparent;
+  color: #aaa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.tab-btn:hover {
+  border-color: #64c8ff;
+  color: #64c8ff;
+  background: rgba(100, 200, 255, 0.1);
+}
+
+.tab-btn.active {
+  background: #64c8ff;
+  color: #0f0f1e;
+  border-color: #64c8ff;
+}
+
+.metrics-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Metrics Overview */
+.metrics-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid rgba(100, 200, 255, 0.3);
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(77, 184, 255, 0.05) 100%);
+  transition: all 0.3s;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.metric-card:hover {
+  border-color: #64c8ff;
+  box-shadow: 0 8px 32px rgba(100, 200, 255, 0.2);
+  transform: translateY(-4px);
+}
+
+.metric-card.primary {
+  border: 2px solid #64c8ff;
+}
+
+.metric-icon {
+  font-size: 2.5rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+.metric-info h4 {
+  color: #64c8ff;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.metric-unit {
+  color: #aaa;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.metric-desc {
+  color: #888;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Calculator Panel */
+.calculator-panel {
+  background: rgba(15, 15, 30, 0.5);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.calc-subtitle {
+  color: #aaa;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.parameter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.param-input {
+  background: rgba(100, 200, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.param-input label {
+  display: block;
+  color: #64c8ff;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.input-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.slider {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, rgba(100, 200, 255, 0.3), rgba(100, 200, 255, 0.6));
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #64c8ff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #5ab3e8;
+  box-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #64c8ff;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #5ab3e8;
+  box-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+}
+
+.number-input {
+  width: 80px;
+  padding: 0.5rem;
+  background: rgba(15, 15, 30, 0.8);
+  border: 1px solid #64c8ff;
+  color: #fff;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #5ab3e8;
+  box-shadow: 0 0 8px rgba(100, 200, 255, 0.3);
+}
+
+.param-hint {
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.calculated-metrics {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(100, 200, 255, 0.08);
+  border: 2px solid #64c8ff;
+  border-radius: 8px;
+}
+
+.calculated-metrics h4 {
+  color: #64c8ff;
+  margin-bottom: 1rem;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.metric-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(15, 15, 30, 0.6);
+  border-radius: 6px;
+  border-left: 3px solid #64c8ff;
+}
+
+.metric-box .label {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.metric-box .value {
+  color: #64c8ff;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Impact Analysis */
+.impact-analysis {
+  background: rgba(15, 15, 30, 0.5);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.impact-subtitle {
+  color: #aaa;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.impact-card {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(77, 184, 255, 0.03) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  padding: 1.5rem;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.impact-card:hover {
+  border-color: #64c8ff;
+  box-shadow: 0 6px 24px rgba(100, 200, 255, 0.15);
+}
+
+.impact-card h4 {
+  color: #64c8ff;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.impact-effect {
+  color: #ddd;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.impact-change {
+  color: #aaa;
+  margin-bottom: 0.75rem;
+  font-size: 0.87rem;
+}
+
+.impact-optimal {
+  color: #64c8ff;
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  background: rgba(100, 200, 255, 0.1);
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.impact-summary {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(77, 184, 255, 0.05) 100%);
+  border: 2px solid rgba(100, 200, 255, 0.4);
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.impact-summary h4 {
+  color: #64c8ff;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.impact-summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.impact-summary li {
+  color: #ddd;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.impact-summary li:before {
+  content: "→";
+  color: #64c8ff;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.impact-summary li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .capacitor-metrics {
+    padding: 1.5rem;
+  }
+
+  .metrics-tabs {
+    gap: 0.5rem;
+  }
+
+  .tab-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .metrics-overview,
+  .parameter-grid,
+  .impact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .metric-icon {
+    min-width: auto;
+    font-size: 2rem;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .calculated-metrics {
+    margin-top: 1.5rem;
+  }
+
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .impact-analysis {
+    padding: 1.5rem;
+  }
+
+  .impact-summary {
+    padding: 1.5rem;
+  }
+}

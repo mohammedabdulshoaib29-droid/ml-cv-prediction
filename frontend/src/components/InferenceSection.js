@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from './FileUploader';
 import DatasetSelector from './DatasetSelector';
 import ResultsDisplay from './ResultsDisplay';
+import CapacitorMetrics from './CapacitorMetrics';
 import { predictionService } from '../services/api';
 import '../styles/InferenceSection.css';
 
@@ -129,6 +130,7 @@ function InferenceSection() {
             <div className="results-container">
               <h3>📈 Prediction Results</h3>
               <ResultsDisplay results={results} loading={loading} error={error} />
+              <CapacitorMetrics results={results} />
             </div>
           )}
         </div>
