@@ -1,11 +1,10 @@
 fastapi
 uvicorn
+gunicorn
 pandas
 numpy
 scikit-learn
 xgboost
-tensorflow
 python-multipart
 openpyxl
 python-dotenv
-cors

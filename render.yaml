@@ -2,12 +2,11 @@ services:
   - type: web
     name: ml-cv-prediction
     runtime: python
-    runtimeVersion: 3.11
-    buildCommand: |
-      cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements-prod.txt
-    startCommand: cd backend && gunicorn -w 4 -b 0.0.0.0:$PORT main:app --timeout 120
+    runtimeVersion: 3.11.10
+    buildCommand: bash build.sh
+    startCommand: cd backend && gunicorn -w 2 -b 0.0.0.0:$PORT main:app --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.10
       - key: PYTHONUNBUFFERED
         value: 1
