@@ -14,24 +14,27 @@
 .selector-section h3,
 .upload-section h3 {
   font-size: 1.2rem;
-  color: #667eea;
+  color: #64c8ff;
   font-weight: 600;
 }
 
 .dataset-dropdown {
   padding: 0.8rem;
-  border: 2px solid #ddd;
+  border: 2px solid rgba(100, 200, 255, 0.3);
   border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
-  transition: border-color 0.3s;
+  background: rgba(15, 15, 30, 0.8);
+  color: #ddd;
+  transition: all 0.3s;
 }
 
 .dataset-dropdown:hover,
 .dataset-dropdown:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #64c8ff;
+  box-shadow: 0 0 10px rgba(100, 200, 255, 0.2);
+  background: rgba(15, 15, 30, 0.9);
 }
 
 .dataset-count {
@@ -85,9 +88,22 @@
 }
 
 .error-message {
-  background: #fee;
-  color: #c33;
-  padding: 0.8rem;
+  background: linear-gradient(135deg, rgba(219, 79, 79, 0.2) 0%, rgba(187, 26, 26, 0.1) 100%);
+  color: #ff9999;
+  padding: 1rem;
   border-radius: 6px;
-  border-left: 4px solid #f44;
+  border-left: 4px solid #db4f4f;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-in;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

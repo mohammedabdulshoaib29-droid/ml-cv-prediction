@@ -95,6 +95,28 @@
   cursor: not-allowed;
 }
 
+.error-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(219, 79, 79, 0.2) 0%, rgba(187, 26, 26, 0.1) 100%);
+  border: 2px solid #db4f4f;
+  border-radius: 8px;
+  color: #ff9999;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-in;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .results-container {
   margin-top: 2rem;
   padding: 1.5rem;

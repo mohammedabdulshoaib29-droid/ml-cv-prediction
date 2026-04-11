@@ -17,12 +17,19 @@ const DatasetSelector = ({ onDatasetSelect, onUploadSuccess }) => {
   const loadDatasets = async () => {
     try {
       setLoading(true);
+      console.log('Loading datasets...');
       const data = await datasetService.getDatasets();
+      console.log('Datasets loaded:', data);
       setDatasets(data);
       setError('');
+      
+      if (data.length === 0) {
+        setError('⚠️ No datasets available. Please upload a training dataset first.');
+      }
     } catch (err) {
-      setError('Failed to load datasets');
-      console.error(err);
+      const errorMsg = `❌ Failed to load datasets: ${err.message}`;
+      console.error(errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -40,21 +47,24 @@ const DatasetSelector = ({ onDatasetSelect, onUploadSuccess }) => {
 
   const handleUploadDataset = async () => {
     if (!uploadFile) {
-      setError('Please select a file to upload');
+      setError('⚠️ Please select a file to upload');
       return;
     }
 
     try {
       setUploading(true);
+      console.log('Uploading dataset:', uploadFile.name);
       await datasetService.uploadDataset(uploadFile);
       setError('');
       setUploadFile(null);
       document.getElementById('file-input').value = '';
+      console.log('Dataset uploaded successfully');
       await loadDatasets();
       onUploadSuccess();
     } catch (err) {
-      setError('Failed to upload dataset');
-      console.error(err);
+      const errorMsg = `❌ Failed to upload dataset: ${err.message}`;
+      console.error(errorMsg);
+      setError(errorMsg);
     } finally {
       setUploading(false);
     }

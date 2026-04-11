@@ -24,12 +24,12 @@ function InferenceSection() {
 
   const handlePredict = async () => {
     if (!selectedDataset) {
-      setError('Please select a training dataset');
+      setError('⚠️ Please select a training dataset');
       return;
     }
 
     if (!testFile) {
-      setError('Please upload a test file');
+      setError('⚠️ Please upload a test file');
       return;
     }
 
@@ -37,15 +37,24 @@ function InferenceSection() {
     setError('');
     
     try {
+      console.log('Starting prediction with:', {
+        dataset: selectedDataset,
+        testFile: testFile.name,
+        model: selectedModel
+      });
+      
       const response = await predictionService.predict(
         selectedDataset,
         testFile,
         selectedModel
       );
+      
+      console.log('Prediction successful:', response);
       setResults(response);
     } catch (err) {
-      setError(err.response?.data?.detail || 'An error occurred during prediction');
-      console.error(err);
+      const errorMessage = err.message || (err.response?.data?.detail) || 'An error occurred during prediction';
+      console.error('Prediction error:', errorMessage);
+      setError(`❌ ${errorMessage}`);
     } finally {
       setLoading(false);
     }
