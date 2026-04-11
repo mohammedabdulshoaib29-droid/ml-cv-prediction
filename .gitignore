@@ -1,0 +1,66 @@
+.gitignore for ML Web Application
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+.venv
+venv/
+ENV/
+env/
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+build/
+dist/
+
+# Datasets
+datasets/*.csv
+datasets/*.xlsx
+datasets/*.xls
+!datasets/SAMPLE_DATASETS.md
+!datasets/generate_sample_datasets.py
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db

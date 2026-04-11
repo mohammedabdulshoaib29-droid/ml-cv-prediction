@@ -1,0 +1,84 @@
+.file-uploader-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.file-uploader-container h3 {
+  color: #667eea;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.upload-area {
+  position: relative;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.upload-label:hover {
+  border-color: #764ba2;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.upload-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.upload-text {
+  text-align: center;
+  color: #667;
+  font-weight: 500;
+}
+
+.file-info {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-info p {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.clear-btn {
+  align-self: flex-start;
+  padding: 0.4rem 0.8rem;
+  background: #f44;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+.clear-btn:hover {
+  background: #d22;
+}
+
+.format-info {
+  color: #667;
+  font-size: 0.9rem;
+  font-style: italic;
+}

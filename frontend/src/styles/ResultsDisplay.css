@@ -1,0 +1,159 @@
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.results-container h2 {
+  color: #667eea;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.results-info {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  padding: 1rem;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.results-info p {
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.model-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 4px solid #667eea;
+}
+
+.model-card h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.metric label {
+  font-weight: 600;
+  color: #333;
+}
+
+.metric .value {
+  color: #667eea;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.predictions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.predictions label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.predictions ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.3rem;
+}
+
+.predictions li {
+  background: white;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #667;
+}
+
+.status {
+  margin-top: 1rem;
+  padding: 0.6rem;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status.success {
+  background: #efe;
+  color: #2e2;
+  border: 1px solid #2e2;
+}
+
+.status.error {
+  background: #fee;
+  color: #f44;
+  border: 1px solid #f44;
+}
+
+.download-btn {
+  align-self: center;
+  padding: 0.8rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.download-btn:hover {
+  background: #764ba2;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+}
+
+.loading-container p {
+  color: #667;
+  font-size: 1.1rem;
+}
+
+.error-container {
+  background: #fee;
+  border: 2px solid #f44;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-container h3 {
+  color: #f44;
+  margin-bottom: 0.5rem;
+}
+
+.error-container p {
+  color: #c33;
+}

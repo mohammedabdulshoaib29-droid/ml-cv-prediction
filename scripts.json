@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "concurrently \"cd backend && python main.py\" \"cd frontend && npm start\"",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:backend": "cd backend && pip install -r requirements-prod.txt",
+    "build": "npm run build:frontend && npm run build:backend",
+    "start": "node server.js",
+    "preview": "http-server frontend/build"
+  },
+  "dependencyComments": {
+    "note": "Backend dependencies are managed in backend/requirements-prod.txt",
+    "note2": "Frontend dependencies are in frontend/package.json"
+  }
+}
