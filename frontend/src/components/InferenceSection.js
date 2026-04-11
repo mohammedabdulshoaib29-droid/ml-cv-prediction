@@ -1,11 +1,54 @@
 import React, { useState } from 'react';
 import FileUploader from './FileUploader';
 import DatasetSelector from './DatasetSelector';
+import ResultsDisplay from './ResultsDisplay';
+import { predictionService } from '../services/api';
 import '../styles/InferenceSection.css';
 
 function InferenceSection() {
   const [selectedDataset, setSelectedDataset] = useState('');
   const [selectedModel, setSelectedModel] = useState('all');
+  const [testFile, setTestFile] = useState(null);
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleDatasetSelect = (dataset) => {
+    setSelectedDataset(dataset);
+  };
+
+  const handleFileSelect = (file) => {
+    setTestFile(file);
+  };
+
+  const handlePredict = async () => {
+    if (!selectedDataset) {
+      setError('Please select a training dataset');
+      return;
+    }
+
+    if (!testFile) {
+      setError('Please upload a test file');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await predictionService.predict(
+        selectedDataset,
+        testFile,
+        selectedModel
+      );
+      setResults(response);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'An error occurred during prediction');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section id="predict" className="inference">
@@ -15,14 +58,14 @@ function InferenceSection() {
         
         <div className="inference-content">
           <div className="inference-panel">
-            <h3>select Training Dataset</h3>
-            <DatasetSelector onSelectDataset={setSelectedDataset} />
+            <h3>📊 Select Training Dataset</h3>
+            <DatasetSelector onDatasetSelect={handleDatasetSelect} onUploadSuccess={() => {}} />
           </div>
 
           <div className="inference-panel">
             <h3>📤 Upload Test Data</h3>
             {selectedDataset ? (
-              <FileUploader datasetName={selectedDataset} />
+              <FileUploader onFileSelect={handleFileSelect} label="Upload Test Dataset" />
             ) : (
               <div className="placeholder">
                 <p>Please select a training dataset first</p>
@@ -54,11 +97,11 @@ function InferenceSection() {
               <label>
                 <input 
                   type="radio" 
-                  value="tensorflow" 
-                  checked={selectedModel === 'tensorflow'}
+                  value="ann" 
+                  checked={selectedModel === 'ann'}
                   onChange={(e) => setSelectedModel(e.target.value)}
                 />
-                <span>TensorFlow Only</span>
+                <span>Neural Network Only</span>
               </label>
               <label>
                 <input 
@@ -71,6 +114,23 @@ function InferenceSection() {
               </label>
             </div>
           </div>
+
+          <button 
+            onClick={handlePredict}
+            disabled={!selectedDataset || !testFile || loading}
+            className="submit-button"
+          >
+            {loading ? '⏳ Processing...' : '🚀 Run Prediction'}
+          </button>
+
+          {error && <div className="error-message">{error}</div>}
+
+          {results && (
+            <div className="results-container">
+              <h3>📈 Prediction Results</h3>
+              <ResultsDisplay results={results} loading={loading} error={error} />
+            </div>
+          )}
         </div>
       </div>
     </section>
