@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from routes.dataset_routes import router as dataset_router
 from routes.prediction_routes import router as prediction_router
+from routes.cv_prediction_routes import router as cv_prediction_router
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ app.add_middleware(
 # Include API routers
 app.include_router(dataset_router, prefix="/api", tags=["datasets"])
 app.include_router(prediction_router, prefix="/api", tags=["predictions"])
+app.include_router(cv_prediction_router, prefix="/api", tags=["cv-predictions"])
 
 @app.get("/health")
 def health_check():
