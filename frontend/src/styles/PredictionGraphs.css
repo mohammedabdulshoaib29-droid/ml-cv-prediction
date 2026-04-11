@@ -1,0 +1,195 @@
+/* Prediction Graphs Component */
+.prediction-graphs {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(77, 184, 255, 0.03) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  border-radius: 12px;
+}
+
+.prediction-graphs h3 {
+  color: #64c8ff;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.graph-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.graph-tab {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid rgba(100, 200, 255, 0.3);
+  background: transparent;
+  color: #aaa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.graph-tab:hover {
+  border-color: #64c8ff;
+  color: #64c8ff;
+  background: rgba(100, 200, 255, 0.1);
+}
+
+.graph-tab.active {
+  background: #64c8ff;
+  color: #0f0f1e;
+  border-color: #64c8ff;
+}
+
+.graph-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.graph-container {
+  padding: 1.5rem;
+  background: rgba(15, 15, 30, 0.6);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.graph-container h4 {
+  color: #64c8ff;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.graph-description {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+/* Performance Summary */
+.performance-summary {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(77, 184, 255, 0.05) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  border-radius: 8px;
+}
+
+.performance-summary h5 {
+  color: #64c8ff;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background: rgba(100, 200, 255, 0.05);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  padding: 1.2rem;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.summary-card:hover {
+  border-color: #64c8ff;
+  background: rgba(100, 200, 255, 0.1);
+  box-shadow: 0 6px 20px rgba(100, 200, 255, 0.15);
+}
+
+.summary-card h6 {
+  color: #64c8ff;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.metric-item:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.metric-value {
+  color: #64c8ff;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+/* Recharts customization */
+.recharts-wrapper {
+  outline: none;
+}
+
+.recharts-cartesian-axis-tick text {
+  fill: #aaa !important;
+  font-size: 12px;
+}
+
+.recharts-surface {
+  background-color: transparent !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .prediction-graphs {
+    padding: 1.5rem;
+  }
+
+  .graph-tabs {
+    gap: 0.5rem;
+  }
+
+  .graph-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .graph-container {
+    padding: 1rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-container {
+    margin-bottom: 1rem;
+  }
+}

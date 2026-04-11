@@ -1,5 +1,6 @@
 import React from 'react';
 import { ClipLoader } from 'react-spinners';
+import PredictionGraphs from './PredictionGraphs';
 import '../styles/ResultsDisplay.css';
 
 const ResultsDisplay = ({ results, loading, error }) => {
@@ -106,6 +107,8 @@ const ResultsDisplay = ({ results, loading, error }) => {
       <button onClick={downloadCSV} className="download-btn">
         📥 Download Predictions as CSV
       </button>
+
+      <PredictionGraphs results={results} />
     </div>
   );
 };
