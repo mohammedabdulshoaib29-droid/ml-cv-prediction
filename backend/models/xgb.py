@@ -6,8 +6,8 @@ from xgboost import XGBRegressor
 
 def run_xgb(train_df, test_df):
     """
-    Tensor Neural Network (TNN) - XGBoost Implementation
-    Gradient boosting with tensor-based operations
+    XGBoost (Extreme Gradient Boosting) Model
+    Gradient boosting with sequential tree optimization
     """
 
     predictors = ["Potential", "OXIDATION", "Zn/Co_Conc", "SCAN_RATE", "ZN", "CO"]

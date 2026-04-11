@@ -98,15 +98,6 @@ function InferenceSection() {
               <label>
                 <input 
                   type="radio" 
-                  value="tnn" 
-                  checked={selectedModel === 'tnn'}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                />
-                <span>Tensor Neural Network (TNN) Only</span>
-              </label>
-              <label>
-                <input 
-                  type="radio" 
                   value="ann" 
                   checked={selectedModel === 'ann'}
                   onChange={(e) => setSelectedModel(e.target.value)}
@@ -120,7 +111,16 @@ function InferenceSection() {
                   checked={selectedModel === 'rf'}
                   onChange={(e) => setSelectedModel(e.target.value)}
                 />
-                <span>Random Forest Only</span>
+                <span>Random Forest (RF) Only</span>
+              </label>
+              <label>
+                <input 
+                  type="radio" 
+                  value="xgb" 
+                  checked={selectedModel === 'xgb'}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                />
+                <span>XGBoost (XGB) Only</span>
               </label>
             </div>
           </div>

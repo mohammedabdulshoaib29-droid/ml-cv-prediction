@@ -94,7 +94,7 @@ async def cv_predict(
 async def cv_predict_single_model(
     dataset_name: str = Form(...),
     test_file: UploadFile = File(...),
-    model: str = Form(default="tnn", regex="^(ann|rf|tnn)$")
+    model: str = Form(default="xgb", regex="^(ann|rf|xgb)$")
 ):
     """
     Run CV analysis using a single specific model
@@ -102,7 +102,7 @@ async def cv_predict_single_model(
     Args:
         dataset_name: Name of training dataset
         test_file: Uploaded test dataset
-        model: 'ann' (Artificial Neural Network), 'rf' (Random Forest), or 'tnn' (Tensor Neural Network)
+        model: 'ann' (Artificial Neural Network), 'rf' (Random Forest), or 'xgb' (XGBoost)
     
     Returns:
         Single model results with CV metrics
@@ -116,7 +116,7 @@ async def cv_predict_single_model(
         model_functions = {
             'ann': run_ann,
             'rf': run_rf,
-            'tnn': run_xgb
+            'xgb': run_xgb
         }
         
         # Validate dataset exists
@@ -159,7 +159,7 @@ async def cv_predict_single_model(
             
             results = model_func(train_df, test_df)
             
-            model_names = {'ann': 'Artificial Neural Network (ANN)', 'rf': 'Random Forest (RF)', 'tnn': 'Tensor Neural Network (TNN)'}
+            model_names = {'ann': 'Artificial Neural Network (ANN)', 'rf': 'Random Forest (RF)', 'xgb': 'XGBoost (XGB)'}
             
             return {
                 "status": "success",

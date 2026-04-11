@@ -41,7 +41,7 @@ def run_all_models(train_df, test_df):
     try:
         xgb = run_xgb(train_df, test_df)
     except Exception as e:
-        print(f"TNN Error: {e}")
+        print(f"XGB Error: {e}")
         xgb = {
             "r2": 0, 
             "rmse": float("inf"), 
@@ -64,7 +64,7 @@ def run_all_models(train_df, test_df):
             "rmse": rf["rmse"],
             "capacitance": rf["capacitance"]
         },
-        "TNN": {
+        "XGB": {
             "r2": xgb["r2"], 
             "rmse": xgb["rmse"],
             "capacitance": xgb["capacitance"]
@@ -77,7 +77,7 @@ def run_all_models(train_df, test_df):
     model_caps = {
         "ANN": ann["capacitance"],
         "RF": rf["capacitance"],
-        "TNN": xgb["capacitance"]
+        "XGB": xgb["capacitance"]
     }
 
     best_model = max(model_caps, key=model_caps.get)
@@ -124,7 +124,7 @@ def run_all_models(train_df, test_df):
             "best_concentration": rf["best_concentration"]
         },
         {
-            "model": "Tensor Neural Network (TNN)",
+            "model": "XGBoost (XGB)",
             "r2": xgb["r2"],
             "rmse": xgb["rmse"],
             "capacitance": xgb["capacitance"],

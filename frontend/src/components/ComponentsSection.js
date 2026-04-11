@@ -4,30 +4,30 @@ import '../styles/ComponentsSection.css';
 function ComponentsSection() {
   const components = [
     {
-      title: "Tensor Neural Network (TNN)",
-      description: "Advanced deep learning model with tensor operations",
-      features: [
-        "Tensor-based computations",
-        "Efficient matrix operations",
-        "Optimized gradient descent"
-      ]
-    },
-    {
       title: "Artificial Neural Network (ANN)",
-      description: "Deep learning model with multiple hidden layers",
+      description: "Deep learning model with multi-layer neural architecture",
       features: [
-        "Learns complex patterns",
-        "Multi-hidden layer architecture",
-        "ReLU activation functions"
+        "Learns complex non-linear patterns",
+        "Multi-hidden layer architecture (128→64→1)",
+        "ReLU activation with BatchNormalization"
       ]
     },
     {
-      title: "Random Forest Classification",
+      title: "Random Forest (RF)",
       description: "Ensemble of decision trees with voting mechanism",
       features: [
-        "Reduced overfitting",
-        "Parallel processing",
-        "Feature interactions"
+        "Reduced overfitting through ensemble voting",
+        "Feature importance extraction",
+        "Parallel processing capability"
+      ]
+    },
+    {
+      title: "XGBoost (Extreme Gradient Boosting)",
+      description: "Sequential boosting with gradient optimization",
+      features: [
+        "Handles non-linear relationships",
+        "Feature importance extraction",
+        "Robust to outliers and noise"
       ]
     },
     {

@@ -98,26 +98,20 @@ async def predict(
             }
             
             evaluator = ModelEvaluator()
-            selected_models = ['ann', 'rf', 'tnn'] if model_type == 'all' else [model_type]
+            selected_models = ['ann', 'rf', 'xgb'] if model_type == 'all' else [model_type]
             
-            # Map frontend model names to backend models
-            model_mapping = {
-                'tnn': 'xgb',  # TNN (Tensor Neural Network) uses XGBoost backend
-                'ann': 'ann',  # ANN (Artificial Neural Network)
-                'rf': 'rf'     # RF (Random Forest)
-            }
-            for frontend_model_name in selected_models:
-                backend_model_name = model_mapping.get(frontend_model_name, frontend_model_name)
-                if predictions_dict.get(backend_model_name) is not None:
-                    preds = predictions_dict[backend_model_name]
+            # Direct model mapping (no transformation needed)
+            for model_name in selected_models:
+                if predictions_dict.get(model_name) is not None:
+                    preds = predictions_dict[model_name]
                     
                     # Inverse transform predictions if needed
                     preds_original = preprocessor.inverse_transform_predictions(preds)
                     
-                    results["models"][frontend_model_name] = {
+                    results["models"][model_name] = {
                         "predictions": preds_original.tolist()[:10],  # First 10 for display
                         "all_predictions": preds_original.tolist(),
-                        "training_status": train_results.get(backend_model_name, 'unknown')
+                        "training_status": train_results.get(model_name, 'unknown')
                     }
                     
                     # Add metrics if test labels available

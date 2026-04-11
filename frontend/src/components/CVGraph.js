@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import '../styles/CVGraph.css';
 
 function CVGraph({ predictions = [] }) {
-  const [selectedModel, setSelectedModel] = useState('tnn');
+  const [selectedModel, setSelectedModel] = useState('xgb');
 
   // Generate realistic CV curve data based on prediction values
   const generateCVCurve = (intensity = 1) => {
@@ -59,19 +59,14 @@ function CVGraph({ predictions = [] }) {
   const modelMetrics = useMemo(() => {
     if (predictions.length === 0) {
       return {
-        tnn: { peakCurrent: 29.5, potential: 1.05, capacitance: 192 },
         ann: { peakCurrent: 28.5, potential: 1.0, capacitance: 185 },
-        rf: { peakCurrent: 26.3, potential: 0.95, capacitance: 172 }
+        rf: { peakCurrent: 26.3, potential: 0.95, capacitance: 172 },
+        xgb: { peakCurrent: 29.2, potential: 1.05, capacitance: 195 }
       };
     }
     
     const baseValue = predictions[0]?.predicted_value || 1;
     return {
-      tnn: { 
-        peakCurrent: baseValue * 2.95, 
-        potential: 1.05 + (Math.random() * 0.1 - 0.05), 
-        capacitance: baseValue * 192 
-      },
       ann: { 
         peakCurrent: baseValue * 2.85, 
         potential: 1.0 + (Math.random() * 0.1 - 0.05), 
@@ -81,11 +76,16 @@ function CVGraph({ predictions = [] }) {
         peakCurrent: baseValue * 2.63, 
         potential: 0.95 + (Math.random() * 0.1 - 0.05),
         capacitance: baseValue * 172 
+      },
+      xgb: { 
+        peakCurrent: baseValue * 2.92, 
+        potential: 1.05 + (Math.random() * 0.1 - 0.05), 
+        capacitance: baseValue * 195 
       }
     };
   }, [predictions]);
 
-  const metrics = modelMetrics[selectedModel] || modelMetrics.tnn;
+  const metrics = modelMetrics[selectedModel] || modelMetrics.xgb;
 
   return (
     <div className="cv-graph-container">
@@ -100,9 +100,9 @@ function CVGraph({ predictions = [] }) {
         <label>Select Model:</label>
         <div className="model-buttons">
           {[
-            { key: 'tnn', label: 'TNN' },
             { key: 'ann', label: 'ANN' },
-            { key: 'rf', label: 'RF' }
+            { key: 'rf', label: 'RF' },
+            { key: 'xgb', label: 'XGB' }
           ].map((model) => (
             <button
               key={model.key}
