@@ -43,6 +43,23 @@
   color: #64c8ff;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  color: #aaa;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  margin: 0;
+}
+
+.link-button:hover {
+  color: #64c8ff;
+}
+
 .footer-bottom {
   text-align: center;
   padding-top: 1.5rem;

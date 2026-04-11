@@ -24,20 +24,20 @@ function Footer() {
         <div className="footer-section">
           <h4>Resources</h4>
           <ul>
-            <li><a href="#">Documentation</a></li>
-            <li><a href="#">API Reference</a></li>
-            <li><a href="#">Tutorials</a></li>
-            <li><a href="#">Research Papers</a></li>
+            <li><button onClick={() => window.alert('Documentation coming soon')} className="link-button">Documentation</button></li>
+            <li><button onClick={() => window.alert('API Reference coming soon')} className="link-button">API Reference</button></li>
+            <li><button onClick={() => window.alert('Tutorials coming soon')} className="link-button">Tutorials</button></li>
+            <li><a href="https://arxiv.org/" target="_blank" rel="noopener noreferrer">Research Papers</a></li>
           </ul>
         </div>
 
         <div className="footer-section">
           <h4>Company</h4>
           <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Twitter</a></li>
-            <li><a href="#">GitHub</a></li>
+            <li><button onClick={() => window.alert('About Us coming soon')} className="link-button">About Us</button></li>
+            <li><button onClick={() => window.alert('Contact coming soon')} className="link-button">Contact</button></li>
+            <li><a href="https://twitter.com/" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+            <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a></li>
           </ul>
         </div>
       </div>
