@@ -10,12 +10,6 @@ function ArchitectureSection() {
         
         <div className="architecture-diagram">
           <img src="/images/system-architecture.png" alt="Machine Learning Architecture Diagram" className="diagram-image" />
-          
-          <div className="diagram-box">
-            <h3>📈 Output</h3>
-            <p>Predictions & Analysis</p>
-            <p>Model Comparison</p>
-          </div>
         </div>
       </div>
     </section>

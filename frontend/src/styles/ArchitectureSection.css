@@ -12,9 +12,7 @@
 }
 
 .architecture-diagram {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -27,6 +25,8 @@
   width: 100%;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(100, 200, 255, 0.2);
+  display: block;
+  margin-bottom: 2rem;
 }
 
 .diagram-box {
