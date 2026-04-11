@@ -98,11 +98,11 @@ function InferenceSection() {
               <label>
                 <input 
                   type="radio" 
-                  value="xgb" 
-                  checked={selectedModel === 'xgb'}
+                  value="tnn" 
+                  checked={selectedModel === 'tnn'}
                   onChange={(e) => setSelectedModel(e.target.value)}
                 />
-                <span>XGBoost Only</span>
+                <span>Tensor Neural Network (TNN) Only</span>
               </label>
               <label>
                 <input 
@@ -111,7 +111,7 @@ function InferenceSection() {
                   checked={selectedModel === 'ann'}
                   onChange={(e) => setSelectedModel(e.target.value)}
                 />
-                <span>Neural Network Only</span>
+                <span>Artificial Neural Network (ANN) Only</span>
               </label>
               <label>
                 <input 

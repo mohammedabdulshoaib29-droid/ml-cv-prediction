@@ -4,16 +4,16 @@ import '../styles/ComponentsSection.css';
 function ComponentsSection() {
   const components = [
     {
-      title: "XGBoost Gradient Boosting",
-      description: "Ensemble method that sequentially builds decision trees",
+      title: "Tensor Neural Network (TNN)",
+      description: "Advanced deep learning model with tensor operations",
       features: [
-        "Handles non-linear relationships",
-        "Feature importance extraction",
-        "Robust to outliers"
+        "Tensor-based computations",
+        "Efficient matrix operations",
+        "Optimized gradient descent"
       ]
     },
     {
-      title: "TensorFlow Neural Network",
+      title: "Artificial Neural Network (ANN)",
       description: "Deep learning model with multiple hidden layers",
       features: [
         "Learns complex patterns",

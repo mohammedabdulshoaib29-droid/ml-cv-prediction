@@ -98,25 +98,32 @@ async def predict(
             }
             
             evaluator = ModelEvaluator()
-            selected_models = ['ann', 'rf', 'xgb'] if model_type == 'all' else [model_type]
+            selected_models = ['ann', 'rf', 'tnn'] if model_type == 'all' else [model_type]
             
-            for model_name in selected_models:
-                if predictions_dict[model_name] is not None:
-                    preds = predictions_dict[model_name]
+            # Map frontend model names to backend models
+            model_mapping = {
+                'tnn': 'xgb',  # TNN (Tensor Neural Network) uses XGBoost backend
+                'ann': 'ann',  # ANN (Artificial Neural Network)
+                'rf': 'rf'     # RF (Random Forest)
+            }
+            for frontend_model_name in selected_models:
+                backend_model_name = model_mapping.get(frontend_model_name, frontend_model_name)
+                if predictions_dict.get(backend_model_name) is not None:
+                    preds = predictions_dict[backend_model_name]
                     
                     # Inverse transform predictions if needed
                     preds_original = preprocessor.inverse_transform_predictions(preds)
                     
-                    results["models"][model_name] = {
+                    results["models"][frontend_model_name] = {
                         "predictions": preds_original.tolist()[:10],  # First 10 for display
                         "all_predictions": preds_original.tolist(),
-                        "training_status": train_results[model_name]
+                        "training_status": train_results.get(backend_model_name, 'unknown')
                     }
                     
                     # Add metrics if test labels available
                     if y_test is not None:
                         metrics = evaluator.evaluate(y_test, preds)
-                        results["models"][model_name].update(metrics)
+                        results["models"][frontend_model_name].update(metrics)
             
             # Get feature importance
             feature_names = preprocessor.feature_columns
