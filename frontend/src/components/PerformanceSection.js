@@ -31,7 +31,7 @@ function PerformanceSection() {
           </div>
 
           <div className="model-card">
-            <h3>🧠 TensorFlow NN</h3>
+            <h3>🧠 Artificial Neural Network (ANN)</h3>
             <div className="metrics">
               <div className="metric">
                 <span className="metric-label">Accuracy</span>
@@ -80,7 +80,7 @@ function PerformanceSection() {
           <div className="training-details">
             <div className="detail">
               <span className="label">Optimizer:</span>
-              <span className="value">Adam (TensorFlow), Gradient Boost (XGBoost)</span>
+              <span className="value">Adam Optimizer (ANN), Gradient Boost (XGBoost)</span>
             </div>
             <div className="detail">
               <span className="label">Learning Rate:</span>

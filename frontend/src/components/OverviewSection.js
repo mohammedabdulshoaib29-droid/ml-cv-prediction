@@ -9,7 +9,7 @@ function OverviewSection() {
         <div className="overview-content">
           <p>
             This advanced machine learning model predicts cyclic voltammetry (CV) behavior for ZN/CO substituted BiFe<sub>0</sub>O₃ materials 
-            using state-of-the-art deep learning algorithms including XGBoost, TensorFlow, and Random Forest.
+            using state-of-the-art deep learning algorithms including XGBoost, Artificial Neural Networks, and Random Forest.
           </p>
           <p>
             The model integrates multiple neural network architectures to predict electrochemical properties with high accuracy, 
@@ -18,7 +18,7 @@ function OverviewSection() {
           <div className="overview-highlights">
             <div className="highlight">
               <h4>🎯 Multi-Model Ensemble</h4>
-              <p>Combines XGBoost, TensorFlow Neural Networks, and Random Forest</p>
+              <p>Combines XGBoost, Artificial Neural Network (ANN), and Random Forest</p>
             </div>
             <div className="highlight">
               <h4>📊 High Accuracy</h4>

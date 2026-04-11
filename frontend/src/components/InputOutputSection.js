@@ -29,7 +29,7 @@ function InputOutputSection() {
                 <span className="icon">⚙️</span>
                 <div>
                   <h4>Model Selection</h4>
-                  <p>Choose: All models, XGBoost, TensorFlow, or Random Forest</p>
+                  <p>Choose: All models, XGBoost, Artificial Neural Network (ANN), or Random Forest</p>
                 </div>
               </div>
             </div>
