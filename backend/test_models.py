@@ -3,6 +3,12 @@
 
 import sys
 import os
+
+# Fix for Windows console encoding
+if sys.platform == 'win32':
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    sys.stdout.reconfigure(encoding='utf-8')
+    
 import pandas as pd
 import numpy as np
 from pathlib import Path
