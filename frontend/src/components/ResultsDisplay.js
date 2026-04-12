@@ -73,7 +73,9 @@ const ResultsDisplay = ({ results, loading, error }) => {
         <p><strong>Test Samples:</strong> {results.test_samples}</p>
         {isCV && results.best_model && <p><strong>Best Model:</strong> {results.best_model}</p>}
         {isCV && results.best_dopant && <p><strong>Recommended Dopant:</strong> {results.best_dopant}</p>}
-        {isCV && results.capacitance && <p><strong>Capacitance:</strong> {parseFloat(results.capacitance.toFixed(2))} F/g</p>}
+        {isCV && results.capacitance && <p><strong>Specific Capacitance:</strong> {parseFloat(results.capacitance.toFixed(2))} F/g</p>}
+        {isCV && results.energy_density !== undefined && <p><strong>Energy Density:</strong> {parseFloat(results.energy_density.toFixed(2))} Wh/kg</p>}
+        {isCV && results.power_density !== undefined && <p><strong>Power Density:</strong> {parseFloat(results.power_density.toFixed(2))} W/kg</p>}
       </div>
 
       {!isCV && <CVGraph predictions={Object.values(results.models || {}).flatMap(m => m.predictions || [])} />}

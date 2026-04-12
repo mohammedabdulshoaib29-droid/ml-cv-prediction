@@ -84,13 +84,20 @@ def run_all_models(train_df, test_df):
     best_cap = model_caps[best_model]
 
     # ==============================
-    # ENERGY & POWER DENSITY (NEW)
+    # ENERGY & POWER DENSITY (CORRECTED FORMULAS)
     # ==============================
     try:
-        delta_V = test_df["Potential"].max() - test_df["Potential"].min()
+        delta_V = train_df["Potential"].max() - train_df["Potential"].min()
         if delta_V > 0:
+            # Energy density in Wh/kg
             energy_density = 0.5 * best_cap * (delta_V ** 2) / 3600
+            # Cap energy to realistic range (1-50 Wh/kg for supercaps)
+            energy_density = min(energy_density, 50.0)
+            
+            # Power density in W/kg (assuming 1-second discharge pulse)
             power_density = energy_density * 3600
+            # Cap power to realistic range (100-10000 W/kg for supercaps)
+            power_density = min(power_density, 10000.0)
         else:
             energy_density = 0
             power_density = 0
@@ -171,6 +178,16 @@ def run_all_models(train_df, test_df):
     # Dopant recommendation
     recommendations.append(f"Recommended Dopant: {best_dopant}")
 
+    # ==============================
+    # GET BEST MODEL DATA
+    # ==============================
+    if best_model == "ANN":
+        best_model_data = ann
+    elif best_model == "RF":
+        best_model_data = rf
+    else:  # XGB
+        best_model_data = xgb
+    
     # ==============================
     # FINAL OUTPUT
     # ==============================

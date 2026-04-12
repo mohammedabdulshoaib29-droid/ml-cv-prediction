@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  LineChart, Line, BarChart, Bar, ScatterChart, Scatter,
+  LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   Cell, PieChart, Pie
 } from 'recharts';
@@ -115,53 +115,55 @@ const PredictionGraphs = ({ results }) => {
       <div className="graph-content">
         {hasGraphs && activeTab === 'cv-graphs' && (
           <div className="graph-container">
-            <h4>CV Curve Analysis - All Models</h4>
+            <h4>📊 Concentration vs Capacitance - All Models</h4>
             <p className="graph-description">
-              Cyclic Voltammetry curves for each model with current vs. potential response
+              Optimal concentration for maximum specific capacitance across all three models
             </p>
             <div className="cv-graphs-grid">
-              {Object.entries(results.graphs).map(([modelName, graphData]) => (
-                <div key={modelName} className="model-cv-graph">
-                  <h5>{modelName}</h5>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={graphData || []}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
-                      <XAxis 
-                        dataKey="voltage" 
-                        stroke="#aaa"
-                        label={{ value: 'Potential (V)', position: 'insideBottomRight', offset: -5 }}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <YAxis 
-                        stroke="#aaa"
-                        label={{ value: 'Current (mA)', angle: -90, position: 'insideLeft' }}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #64c8ff' }}
-                        labelStyle={{ color: '#64c8ff' }}
-                      />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="forwardCurrent" 
-                        stroke="#64c8ff" 
-                        dot={false}
-                        strokeWidth={2}
-                        name="Forward Scan"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="reverseCurrent" 
-                        stroke="#00d4ff" 
-                        dot={false}
-                        strokeWidth={2}
-                        name="Reverse Scan"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ))}
+              {Object.entries(results.graphs).map(([modelName, graphData]) => {
+                // Transform backend format {x: [...], y: [...]} to recharts format
+                const chartData = (graphData?.x && graphData?.y) ? 
+                  graphData.x.map((concentration, idx) => ({
+                    concentration: parseFloat(concentration.toFixed(2)),
+                    capacitance: parseFloat((graphData.y[idx] || 0).toFixed(2))
+                  })) : [];
+                
+                return (
+                  <div key={modelName} className="model-cv-graph">
+                    <h5>{modelName === 'ANN' ? '🧠 ANN' : modelName === 'RF' ? '🌲 Random Forest' : '⚡ XGBoost'}</h5>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                        <XAxis 
+                          dataKey="concentration" 
+                          stroke="#aaa"
+                          label={{ value: 'Dopant Concentration (mol)', position: 'insideBottomRight', offset: -5 }}
+                          tick={{ fontSize: 11 }}
+                        />
+                        <YAxis 
+                          stroke="#aaa"
+                          label={{ value: 'Specific Capacitance (F/g)', angle: -90, position: 'insideLeft' }}
+                          tick={{ fontSize: 11 }}
+                        />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #00d4ff' }}
+                          labelStyle={{ color: '#00d4ff' }}
+                          formatter={(value) => value.toFixed(2)}
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="capacitance" 
+                          stroke={modelName === 'ANN' ? '#64c8ff' : modelName === 'RF' ? '#00ff88' : '#ff6b6b'} 
+                          dot={false}
+                          strokeWidth={3}
+                          name={`${modelName} Capacitance`}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
