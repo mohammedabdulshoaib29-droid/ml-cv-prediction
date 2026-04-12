@@ -1,13 +1,19 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from pathlib import Path
 from models.comparison import run_all_models
+from models.rf import run_rf
 import pandas as pd
 import tempfile
 import sys
 import traceback
 import time
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 router = APIRouter()
+
+# Thread pool for CPU-intensive model training (allows other requests to be handled)
+model_executor = ThreadPoolExecutor(max_workers=4)
 
 # Get datasets directory - works in both local and Render
 BACKEND_DIR = Path(__file__).parent.parent
@@ -173,13 +179,22 @@ async def predict(
             cv_columns_present = all(col in train_df.columns for col in CV_REQUIRED_COLUMNS)
             
             if cv_columns_present and all(col in test_df.columns for col in CV_REQUIRED_COLUMNS):
-                print("[PREDICTION] CV columns validated, running models...")
+                print("[PREDICTION] CV columns validated, running models in background thread...")
+                
+                # Get event loop for async execution
+                loop = asyncio.get_event_loop()
                 
                 # Handle quick mode - RF only (faster for Render free tier)
                 if model_type.lower() == "rf-only":
-                    print("[PREDICTION] Running in QUICK MODE - Random Forest only...")
+                    print("[PREDICTION] Running in QUICK MODE - Random Forest only (non-blocking)...")
                     try:
-                        rf_result = run_rf(train_df, test_df)
+                        # Run RF in thread pool so it doesn't block other requests
+                        rf_result = await loop.run_in_executor(
+                            model_executor,
+                            run_rf,
+                            train_df,
+                            test_df
+                        )
                         elapsed = time.time() - start_time
                         print("[PREDICTION] Models completed in {:.2f}s".format(elapsed))
                         return {
@@ -203,9 +218,14 @@ async def predict(
                         print("[PREDICTION] RF-only mode error: {}".format(e))
                         raise HTTPException(status_code=500, detail="Quick mode failed: {}".format(str(e)))
                 
-                # Standard mode - run all models
-                # Use CV analysis with comparison models
-                cv_results = run_all_models(train_df, test_df)
+                # Standard mode - run all models in background thread (non-blocking)
+                print("[PREDICTION] Running all models in background thread (non-blocking)...")
+                cv_results = await loop.run_in_executor(
+                    model_executor,
+                    run_all_models,
+                    train_df,
+                    test_df
+                )
                 elapsed = time.time() - start_time
                 print("[PREDICTION] Models completed in {:.2f}s".format(elapsed))
                 return {

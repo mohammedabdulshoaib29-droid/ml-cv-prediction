@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from routes.dataset_routes import router as dataset_router
 from routes.prediction_routes import router as prediction_router
@@ -90,6 +91,9 @@ app = FastAPI(
     description="Advanced machine learning for CV analysis and behavior forecasting",
     version="1.0.0"
 )
+
+# Add compression middleware for faster responses
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Add CORS middleware - simplified since frontend is now on same server
 app.add_middleware(
