@@ -1,6 +1,7 @@
 import React from 'react';
 import { ClipLoader } from 'react-spinners';
 import CVGraph from './CVGraph';
+import PredictionGraphs from './PredictionGraphs';
 import '../styles/ResultsDisplay.css';
 
 const ResultsDisplay = ({ results, loading, error }) => {
@@ -22,7 +23,7 @@ const ResultsDisplay = ({ results, loading, error }) => {
     );
   }
 
-  if (!results || (!results.models && !results.graphs)) {
+  if (!results) {
     return null;
   }
 
@@ -44,6 +45,8 @@ const ResultsDisplay = ({ results, loading, error }) => {
       </div>
 
       {!isCV && <CVGraph predictions={Object.values(results.models || {}).flatMap(m => m.predictions || [])} />}
+
+      {isCV && results.graphs && <PredictionGraphs results={results} />}
 
       {isCV && results.table ? (
         <div className="cv-table">

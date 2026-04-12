@@ -6,22 +6,13 @@ import {
 import '../styles/PredictionGraphs.css';
 
 const PredictionGraphs = ({ results }) => {
-  const [activeTab, setActiveTab] = useState('comparison');
+  const [activeTab, setActiveTab] = useState('cv-graphs');
 
-  if (!results || (!results.models && !results.graphs)) {
+  if (!results || !results.graphs) {
     return null;
   }
 
   const hasGraphs = results.graphs && typeof results.graphs === 'object';
-
-  const prepareComparisonData = () => {
-    const firstModel = Object.values(results.models)[0];
-    if (!firstModel || !firstModel.all_predictions) return [];
-    return firstModel.all_predictions.slice(0, 50).map((pred, idx) => ({
-      index: `S${idx + 1}`,
-      predicted: parseFloat(pred.toFixed(2))
-    }));
-  };
 
   return (
     <div className="prediction-graphs">
@@ -36,12 +27,14 @@ const PredictionGraphs = ({ results }) => {
             🔬 CV Curves
           </button>
         )}
-        <button 
-          className={`graph-tab ${activeTab === 'comparison' ? 'active' : ''}`}
-          onClick={() => setActiveTab('comparison')}
-        >
-          📈 Predictions
-        </button>
+        {results.recommendations && (
+          <button 
+            className={`graph-tab ${activeTab === 'recommendations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recommendations')}
+          >
+            💡 Recommendations
+          </button>
+        )}
       </div>
 
       <div className="graph-content">
@@ -59,22 +52,27 @@ const PredictionGraphs = ({ results }) => {
                 return (
                   <div key={modelName} className="model-cv-graph">
                     <h5>{modelName === 'ANN' ? '🧠 ANN' : modelName === 'RF' ? '🌲 RF' : '⚡ XGB'}</h5>
-                    <ResponsiveContainer width="100%" height={350}>
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
-                        <XAxis dataKey="concentration" stroke="#aaa" />
-                        <YAxis stroke="#aaa" />
-                        <Tooltip contentStyle={{ backgroundColor: '#1a1a2e' }} />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="capacitance" 
-                          stroke={modelName === 'ANN' ? '#64c8ff' : modelName === 'RF' ? '#00ff88' : '#ff6b6b'} 
-                          dot={false}
-                          strokeWidth={3}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    {chartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={350}>
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                          <XAxis dataKey="concentration" stroke="#aaa" />
+                          <YAxis stroke="#aaa" />
+                          <Tooltip contentStyle={{ backgroundColor: '#1a1a2e' }} />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="capacitance" 
+                            stroke={modelName === 'ANN' ? '#64c8ff' : modelName === 'RF' ? '#00ff88' : '#ff6b6b'} 
+                            dot={false}
+                            strokeWidth={3}
+                            name="Capacitance (F/g)"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <p className="no-data">No graph data available</p>
+                    )}
                   </div>
                 );
               })}
@@ -82,19 +80,16 @@ const PredictionGraphs = ({ results }) => {
           </div>
         )}
 
-        {activeTab === 'comparison' && (
-          <div className="graph-container">
-            <h4>Prediction Values</h4>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={prepareComparisonData()}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
-                <XAxis dataKey="index" stroke="#aaa" />
-                <YAxis stroke="#aaa" />
-                <Tooltip contentStyle={{ backgroundColor: '#1a1a2e' }} />
-                <Legend />
-                <Line type="monotone" dataKey="predicted" stroke="#64c8ff" dot={false} strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+        {activeTab === 'recommendations' && results.recommendations && (
+          <div className="recommendations-container">
+            <h4>💡 Model Recommendations</h4>
+            <div className="recommendations-list">
+              {results.recommendations.map((rec, idx) => (
+                <div key={idx} className="recommendation-item">
+                  <p>{rec}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

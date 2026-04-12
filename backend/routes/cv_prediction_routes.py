@@ -94,7 +94,7 @@ async def cv_predict(
 async def cv_predict_single_model(
     dataset_name: str = Form(...),
     test_file: UploadFile = File(...),
-    model: str = Form(default="xgb", regex="^(ann|rf|xgb)$")
+    model: str = Form(default="xgb", pattern="^(ann|rf|xgb)$")
 ):
     """
     Run CV analysis using a single specific model

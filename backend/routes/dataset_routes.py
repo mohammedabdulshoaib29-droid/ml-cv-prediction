@@ -4,7 +4,13 @@ import os
 
 router = APIRouter()
 
-DATASETS_DIR = Path("datasets")
+# Get datasets directory - works in both local and Render
+BACKEND_DIR = Path(__file__).parent.parent
+DATASETS_DIR = BACKEND_DIR / "datasets"
+
+# Ensure datasets directory exists
+DATASETS_DIR.mkdir(parents=True, exist_ok=True)
+
 ALLOWED_EXTENSIONS = {'.xlsx', '.xls', '.csv'}
 
 @router.get("/datasets")
@@ -12,6 +18,7 @@ async def get_datasets():
     """Get list of all available datasets"""
     try:
         if not DATASETS_DIR.exists():
+            DATASETS_DIR.mkdir(parents=True, exist_ok=True)
             return {"datasets": []}
         
         datasets = []

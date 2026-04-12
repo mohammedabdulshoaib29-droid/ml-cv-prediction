@@ -15,7 +15,12 @@ import numpy as np
 load_dotenv()
 
 # Create datasets directory if it doesn't exist
-os.makedirs("datasets", exist_ok=True)
+import os
+from pathlib import Path as PathlibPath
+
+BACKEND_DIR = PathlibPath(__file__).parent
+DATASETS_DIR = BACKEND_DIR / "datasets"
+DATASETS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Startup verification
 print("🚀 Initializing ML-CV Prediction API...")
@@ -33,11 +38,8 @@ except Exception as e:
 def generate_sample_cv_datasets():
     """Generate sample CV analysis datasets for testing"""
     
-    datasets_dir = Path("datasets")
-    datasets_dir.mkdir(exist_ok=True)
-    
     # Check if sample datasets already exist
-    sample_file = datasets_dir / "sample_cv_train.csv"
+    sample_file = DATASETS_DIR / "sample_cv_train.csv"
     if sample_file.exists():
         print("✅ Sample datasets already exist")
         return
@@ -59,7 +61,7 @@ def generate_sample_cv_datasets():
     }
     
     train_df = pd.DataFrame(cv_data)
-    train_df.to_csv(datasets_dir / "sample_cv_train.csv", index=False)
+    train_df.to_csv(DATASETS_DIR / "sample_cv_train.csv", index=False)
     print(f"✅ Created sample_cv_train.csv ({n_samples} samples)")
     
     # Generate sample CV test data
@@ -74,7 +76,7 @@ def generate_sample_cv_datasets():
     }
     
     test_df = pd.DataFrame(test_data)
-    test_df.to_csv(datasets_dir / "sample_cv_test.csv", index=False)
+    test_df.to_csv(DATASETS_DIR / "sample_cv_test.csv", index=False)
     print(f"✅ Created sample_cv_test.csv (50 samples)")
 
 # Generate sample datasets on startup
