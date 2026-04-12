@@ -158,5 +158,8 @@ const ResultsDisplay = ({ results, loading, error }) => {
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
 
 export default ResultsDisplay;
