@@ -13,6 +13,166 @@ const PredictionGraphs = ({ results }) => {
     return null;
   }
 
+  const hasGraphs = results.graphs && typeof results.graphs === 'object';
+
+  const COLORS = ['#64c8ff', '#00d4ff', '#4db8ff', '#5ac5ff', '#4080ff'];
+
+  const prepareComparisonData = () => {
+    const firstModel = Object.values(results.models)[0];
+    if (!firstModel || !firstModel.all_predictions) return [];
+    return firstModel.all_predictions.slice(0, 50).map((pred, idx) => ({
+      index: `S${idx + 1}`,
+      predicted: parseFloat(pred.toFixed(2))
+    }));
+  };
+
+  return (
+    <div className="prediction-graphs">
+      <h3>📊 Visualization &amp; Analysis</h3>
+      
+      <div className="graph-tabs">
+        {hasGraphs && (
+          <button 
+            className={`graph-tab ${activeTab === 'cv-graphs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cv-graphs')}
+          >
+            🔬 CV Curves
+          </button>
+        )}
+        <button 
+          className={`graph-tab ${activeTab === 'comparison' ? 'active' : ''}`}
+          onClick={() => setActiveTab('comparison')}
+        >
+          📈 Predictions
+        </button>
+      </div>
+
+      <div className="graph-content">
+        {hasGraphs && activeTab === 'cv-graphs' && (
+          <div className="graph-container">
+            <h4>📊 Concentration vs Capacitance - All Models</h4>
+            <div className="cv-graphs-grid">
+              {Object.entries(results.graphs).map(([modelName, graphData]) => {
+                const chartData = (graphData?.x && graphData?.y) ? 
+                  graphData.x.map((concentration, idx) => ({
+                    concentration: parseFloat(concentration.toFixed(2)),
+                    capacitance: parseFloat((graphData.y[idx] || 0).toFixed(2))
+                  })) : [];
+                
+                return (
+                  <div key={modelName} className="model-cv-graph">
+                    <h5>{modelName === 'ANN' ? '🧠 ANN' : modelName === 'RF' ? '🌲 RF' : '⚡ XGB'}</h5>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                        <XAxis dataKey="concentration" stroke="#aaa" />
+                        <YAxis stroke="#aaa" />
+                        <Tooltip contentStyle={{ backgroundColor: '#1a1a2e' }} />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="capacitance" 
+                          stroke={modelName === 'ANN' ? '#64c8ff' : modelName === 'RF' ? '#00ff88' : '#ff6b6b'} 
+                          dot={false}
+                          strokeWidth={3}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'comparison' && (
+          <div className="graph-container">
+            <h4>Prediction Values</h4>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={prepareComparisonData()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                <XAxis dataKey="index" stroke="#aaa" />
+                <YAxis stroke="#aaa" />
+                <Tooltip contentStyle={{ backgroundColor: '#1a1a2e' }} />
+                <Legend />
+                <Line type="monotone" dataKey="predicted" stroke="#64c8ff" dot={false} strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PredictionGraphs;
+import React, { useState } from 'react';
+import {
+  LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  Cell, PieChart, Pie
+} from 'recharts';
+import '../styles/PredictionGraphs.css';
+
+const PredictionGraphs = ({ results }) => {
+  const [activeTab, setActiveTab] = useState('comparison');
+
+  if (!results || (!results.models && !results.graphs)) {
+    return null;
+  }
+
+  const hasGraphs = results.graphs && typeof results.graphs === 'object';
+
+  const prepareComparisonData = () => {
+    const firstModel = Object.values(results.models)[0];
+    if (!firstModel || !firstModel.all_predictions) return [];
+    const predictions = firstModel.all_predictions;
+    return predictions.slice(0, 50).map((pred, idx) => ({
+      index: `S${idx + 1}`,
+      predicted: parseFloat(pred.toFixed(2))
+    }));
+  };
+
+  const prepareModelMetricsData = () => {
+    return Object.entries(results.models).map(([modelName, data]) => ({
+      name: modelName.toUpperCase(),
+      accuracy: data.accuracy ? parseFloat(data.accuracy.toFixed(3)) : 0,
+      r2: data.r2_score ? parseFloat(data.r2_score.toFixed(3)) * 100 : 0
+    }));
+  };
+
+  const preparePredictionDistribution = () => {
+    const firstModel = Object.values(results.models)[0];
+    if (!firstModel || !firstModel.all_predictions) return [];
+    const predictions = firstModel.all_predictions;
+    const min = Math.min(...predictions);
+    const max = Math.max(...predictions);
+    const binSize = (max - min) / 10;
+    const bins = Array(10).fill(0);
+    predictions.forEach(pred => {
+      const binIndex = Math.min(9, Math.floor((pred - min) / binSize));
+      bins[binIndex]++;
+    });
+    return bins.map((count, idx) => ({
+      range: `${(min + idx * binSize).toFixed(1)}-${(min + (idx + 1) * binSize).toFixed(1)}`,
+      count: count
+    }));
+  };
+
+  const prepareModelPerformance = () => {
+    return Object.entries(results.models).map(([modelName, data]) => ({
+      name: modelName.toUpperCase(),
+      value: data.accuracy ? parseFloat(data.accuracy.toFixed(3)) * 100 : 50
+    }));
+  };
+
+  const COLORS = ['#64c8ff', '#00d4ff', '#4db8ff', '#5ac5ff', '#4080ff'];
+  const [activeTab, setActiveTab] = useState('comparison');
+
+  if (!results || (!results.models && !results.graphs)) {
+    return null;
+  }
+
   // Check if this is CV analysis with graphs
   const hasGraphs = results.graphs && typeof results.graphs === 'object';
 
@@ -74,6 +234,164 @@ const PredictionGraphs = ({ results }) => {
   const COLORS = ['#64c8ff', '#00d4ff', '#4db8ff', '#5ac5ff', '#4080ff'];
 
   return (
+    <div className="prediction-graphs">
+      <h3>📊 Visualization & Analysis</h3>
+      
+      <div className="graph-tabs">
+        {hasGraphs && (
+          <button 
+            className={`graph-tab ${activeTab === 'cv-graphs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cv-graphs')}
+          >
+            🔬 CV Curves
+          </button>
+        )}
+        <button 
+          className={`graph-tab ${activeTab === 'comparison' ? 'active' : ''}`}
+          onClick={() => setActiveTab('comparison')}
+        >
+          📈 Predictions
+        </button>
+        <button 
+          className={`graph-tab ${activeTab === 'distribution' ? 'active' : ''}`}
+          onClick={() => setActiveTab('distribution')}
+        >
+          📊 Distribution
+        </button>
+        <button 
+          className={`graph-tab ${activeTab === 'models' ? 'active' : ''}`}
+          onClick={() => setActiveTab('models')}
+        >
+          🎯 Model Comparison
+        </button>
+        <button 
+          className={`graph-tab ${activeTab === 'performance' ? 'active' : ''}`}
+          onClick={() => setActiveTab('performance')}
+        >
+          ⭐ Performance
+        </button>
+      </div>
+
+      <div className="graph-content">
+        {hasGraphs && activeTab === 'cv-graphs' && (
+          <div className="graph-container">
+            <h4>📊 Concentration vs Capacitance - All Models</h4>
+            <div className="cv-graphs-grid">
+              {Object.entries(results.graphs).map(([modelName, graphData]) => {
+                const chartData = (graphData?.x && graphData?.y) ? 
+                  graphData.x.map((concentration, idx) => ({
+                    concentration: parseFloat(concentration.toFixed(2)),
+                    capacitance: parseFloat((graphData.y[idx] || 0).toFixed(2))
+                  })) : [];
+                
+                return (
+                  <div key={modelName} className="model-cv-graph">
+                    <h5>{modelName === 'ANN' ? '🧠 ANN' : modelName === 'RF' ? '🌲 RF' : '⚡ XGB'}</h5>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                        <XAxis dataKey="concentration" stroke="#aaa" tick={{ fontSize: 11 }} />
+                        <YAxis stroke="#aaa" tick={{ fontSize: 11 }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #00d4ff' }} />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="capacitance" 
+                          stroke={modelName === 'ANN' ? '#64c8ff' : modelName === 'RF' ? '#00ff88' : '#ff6b6b'} 
+                          dot={false}
+                          strokeWidth={3}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'comparison' && (
+          <div className="graph-container">
+            <h4>Prediction Values (First 50 Samples)</h4>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={prepareComparisonData()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                <XAxis dataKey="index" stroke="#aaa" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#aaa" tick={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #64c8ff' }} />
+                <Legend />
+                <Line type="monotone" dataKey="predicted" stroke="#64c8ff" dot={false} strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {activeTab === 'distribution' && (
+          <div className="graph-container">
+            <h4>Prediction Distribution</h4>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={preparePredictionDistribution()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                <XAxis dataKey="range" stroke="#aaa" angle={-45} textAnchor="end" height={80} />
+                <YAxis stroke="#aaa" />
+                <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #64c8ff' }} />
+                <Bar dataKey="count" fill="#64c8ff" radius={[8, 8, 0, 0]}>
+                  {preparePredictionDistribution().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {activeTab === 'models' && (
+          <div className="graph-container">
+            <h4>Model Metrics Comparison</h4>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={prepareModelMetricsData()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 200, 255, 0.2)" />
+                <XAxis dataKey="name" stroke="#aaa" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#aaa" tick={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #64c8ff' }} />
+                <Legend />
+                <Bar dataKey="accuracy" fill="#64c8ff" name="Accuracy" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="r2" fill="#4db8ff" name="R² Score" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {activeTab === 'performance' && (
+          <div className="graph-container">
+            <h4>Model Accuracy Distribution</h4>
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  data={prepareModelPerformance()}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {prepareModelPerformance().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #64c8ff' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PredictionGraphs;
     <div className="prediction-graphs">
       <h3>📊 Visualization & Analysis</h3>
       
