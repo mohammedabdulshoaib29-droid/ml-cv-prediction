@@ -6,7 +6,7 @@ const API_BASE_URL = '/api';
 // Create axios instance with better error handling
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 300000, // 5 minute timeout for predictions
+  timeout: 900000, // 15 minute timeout for predictions (model training can be slow)
 });
 
 // Add response interceptor for better error handling
