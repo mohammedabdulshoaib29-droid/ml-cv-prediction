@@ -54,16 +54,23 @@ def run_xgb(train_df, test_df):
     # STEP 3: REMOVE OUTLIERS (FROM TRAINING DATA ONLY)
     # ========================
     print("[XGB] Removing outliers from training data...")
-    Q1 = train_target.quantile(0.25)
-    Q3 = train_target.quantile(0.75)
-    IQR = Q3 - Q1
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
     
-    mask = (train_target >= lower_bound) & (train_target <= upper_bound)
+    # Use z-score for more robust outlier detection
+    # This is less aggressive than IQR and works better with noisy data
+    from scipy import stats
+    z_scores = np.abs(stats.zscore(train_target))
+    
+    # Keep data within 3 standard deviations (more generous than IQR's 1.5)
+    mask = z_scores <= 3.0
+    initial_count = len(train_data)
+    
     train_data = train_data[mask]
     train_target = train_target[mask]
     
+    print("[XGB]   Outliers removed: {} ({:.1f}%)".format(
+        initial_count - len(train_data),
+        100 * (initial_count - len(train_data)) / initial_count
+    ))
     print("[XGB]   Train after outlier removal: {} samples".format(len(train_data)))
     print("[XGB]   Target value range: [{:.6f}, {:.6f}]".format(train_target.min(), train_target.max()))
 
