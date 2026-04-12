@@ -56,7 +56,7 @@ async def predict(
     Args:
         dataset_name: Name of training dataset
         test_file: Uploaded test dataset
-        model_type: 'all', 'ann', 'rf', or 'xgb'
+        model_type: 'all', 'ann', 'rf', 'xgb', or 'rf-only' (fast mode)
     
     Returns:
         Predictions and accuracy metrics, including CV graphs if applicable
@@ -174,6 +174,36 @@ async def predict(
             
             if cv_columns_present and all(col in test_df.columns for col in CV_REQUIRED_COLUMNS):
                 print("[PREDICTION] CV columns validated, running models...")
+                
+                # Handle quick mode - RF only (faster for Render free tier)
+                if model_type.lower() == "rf-only":
+                    print("[PREDICTION] Running in QUICK MODE - Random Forest only...")
+                    try:
+                        rf_result = run_rf(train_df, test_df)
+                        elapsed = time.time() - start_time
+                        print("[PREDICTION] Models completed in {:.2f}s".format(elapsed))
+                        return {
+                            "status": "success",
+                            "training_dataset": dataset_name,
+                            "test_samples": len(test_df),
+                            "is_cv_analysis": True,
+                            "execution_time_seconds": elapsed,
+                            "quick_mode": True,
+                            "best_model": "Random Forest",
+                            "performance": {
+                                "random_forest": {
+                                    "r2": rf_result.get('r2', 0),
+                                    "rmse": rf_result.get('rmse', 0),
+                                    "mae": rf_result.get('mae', 0)
+                                }
+                            },
+                            **rf_result
+                        }
+                    except Exception as e:
+                        print("[PREDICTION] RF-only mode error: {}".format(e))
+                        raise HTTPException(status_code=500, detail="Quick mode failed: {}".format(str(e)))
+                
+                # Standard mode - run all models
                 # Use CV analysis with comparison models
                 cv_results = run_all_models(train_df, test_df)
                 elapsed = time.time() - start_time
