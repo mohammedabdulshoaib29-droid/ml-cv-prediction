@@ -3,77 +3,104 @@ from models.ann import run_ann
 from models.rf import run_rf
 from models.xgb import run_xgb
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
 
 def run_all_models(train_df, test_df):
     """
-    Run all three models and compare their performance
+    Run all three models in PARALLEL and compare their performance
+    
+    Parallel execution reduces total time significantly:
+    - Sequential: ~5-10 minutes (ANN~2min + RF~2min + XGBoost~2min)
+    - Parallel: ~2-3 minutes (time of slowest model only)
     
     Returns:
         Dictionary with model comparison, best model, and recommendations
     """
     
-    print("\n[MODELS] Starting model execution...")
+    print("\n[MODELS] Starting model execution (PARALLEL MODE)...")
+    start_time = time.time()
 
     # ==============================
-    # RUN ALL MODELS (SAFE EXECUTION)
+    # RUN ALL MODELS IN PARALLEL
     # ==============================
     ann = None
     rf = None
     xgb = None
     
-    try:
-        print("[MODELS] Running ANN model...")
-        ann = run_ann(train_df, test_df)
-        print("[MODELS] ANN complete - R2={:.4f}".format(ann.get('r2', 0)))
-    except Exception as e:
-        print("[MODELS] ANN Error: {}".format(e))
-        import traceback
-        traceback.print_exc()
-        ann = {
-            "r2": -float("inf"), 
-            "rmse": float("inf"), 
-            "mae": float("inf"),
-            "capacitance": 0, 
-            "best_concentration": 0, 
-            "graph": {"x": [], "y": []},
-            "feature_importance": {}
-        }
+    def run_ann_safe():
+        try:
+            print("[MODELS] [THREAD] Running ANN model...")
+            ann_result = run_ann(train_df, test_df)
+            print("[MODELS] [THREAD] ANN complete - R2={:.4f}".format(ann_result.get('r2', 0)))
+            return ann_result
+        except Exception as e:
+            print("[MODELS] [THREAD] ANN Error: {}".format(e))
+            import traceback
+            traceback.print_exc()
+            return {
+                "r2": -float("inf"), 
+                "rmse": float("inf"), 
+                "mae": float("inf"),
+                "capacitance": 0, 
+                "best_concentration": 0, 
+                "graph": {"x": [], "y": []},
+                "feature_importance": {}
+            }
 
-    try:
-        print("[MODELS] Running RF model...")
-        rf = run_rf(train_df, test_df)
-        print("[MODELS] RF complete - R2={:.4f}".format(rf.get('r2', 0)))
-    except Exception as e:
-        print("[MODELS] RF Error: {}".format(e))
-        import traceback
-        traceback.print_exc()
-        rf = {
-            "r2": -float("inf"), 
-            "rmse": float("inf"), 
-            "mae": float("inf"),
-            "capacitance": 0, 
-            "best_concentration": 0, 
-            "graph": {"x": [], "y": []},
-            "feature_importance": {}
-        }
+    def run_rf_safe():
+        try:
+            print("[MODELS] [THREAD] Running RF model...")
+            rf_result = run_rf(train_df, test_df)
+            print("[MODELS] [THREAD] RF complete - R2={:.4f}".format(rf_result.get('r2', 0)))
+            return rf_result
+        except Exception as e:
+            print("[MODELS] [THREAD] RF Error: {}".format(e))
+            import traceback
+            traceback.print_exc()
+            return {
+                "r2": -float("inf"), 
+                "rmse": float("inf"), 
+                "mae": float("inf"),
+                "capacitance": 0, 
+                "best_concentration": 0, 
+                "graph": {"x": [], "y": []},
+                "feature_importance": {}
+            }
 
-    try:
-        print("[MODELS] Running XGB model...")
-        xgb = run_xgb(train_df, test_df)
-        print("[MODELS] XGB complete - R2={:.4f}".format(xgb.get('r2', 0)))
-    except Exception as e:
-        print("[MODELS] XGB Error: {}".format(e))
-        import traceback
-        traceback.print_exc()
-        xgb = {
-            "r2": -float("inf"), 
-            "rmse": float("inf"), 
-            "mae": float("inf"),
-            "capacitance": 0, 
-            "best_concentration": 0, 
-            "graph": {"x": [], "y": []},
-            "feature_importance": {}
-        }
+    def run_xgb_safe():
+        try:
+            print("[MODELS] [THREAD] Running XGB model...")
+            xgb_result = run_xgb(train_df, test_df)
+            print("[MODELS] [THREAD] XGB complete - R2={:.4f}".format(xgb_result.get('r2', 0)))
+            return xgb_result
+        except Exception as e:
+            print("[MODELS] [THREAD] XGB Error: {}".format(e))
+            import traceback
+            traceback.print_exc()
+            return {
+                "r2": -float("inf"), 
+                "rmse": float("inf"), 
+                "mae": float("inf"),
+                "capacitance": 0, 
+                "best_concentration": 0, 
+                "graph": {"x": [], "y": []},
+                "feature_importance": {}
+            }
+
+    # Execute all models in parallel
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        ann_future = executor.submit(run_ann_safe)
+        rf_future = executor.submit(run_rf_safe)
+        xgb_future = executor.submit(run_xgb_safe)
+        
+        # Wait for all to complete
+        ann = ann_future.result()
+        rf = rf_future.result()
+        xgb = xgb_future.result()
+    
+    parallel_time = time.time() - start_time
+    print("[MODELS] All models completed in PARALLEL in {:.2f}s".format(parallel_time))
 
     # ==============================
     # PERFORMANCE COMPARISON
