@@ -4,7 +4,7 @@ pandas
 numpy
 scikit-learn
 xgboost
-tensorflow
+tensorflow==2.13.0
 python-multipart
 openpyxl
 python-dotenv
