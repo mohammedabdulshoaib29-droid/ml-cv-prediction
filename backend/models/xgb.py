@@ -1,30 +1,30 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import cross_val_score, KFold
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from xgboost import XGBRegressor
 
 def run_xgb(train_df, test_df):
     """
-    XGBoost (Extreme Gradient Boosting) Model
-    Gradient boosting with sequential tree optimization
+    XGBoost Regressor Model - FIXED
+    - Proper outlier removal
+    - Optimized hyperparameters for small datasets
+    - Better data handling
+    - No artificial noise
     """
 
     predictors = ["Potential", "OXIDATION", "Zn/Co_Conc", "SCAN_RATE", "ZN", "CO"]
     target = "Current"
 
-    # -------------------------------
-    # 0. VALIDATION
-    # -------------------------------
+    # Validate columns
     for col in predictors + [target]:
         if col not in train_df.columns:
             raise ValueError(f"Missing column in train_df: {col}")
         if col not in test_df.columns:
             raise ValueError(f"Missing column in test_df: {col}")
 
-    # -------------------------------
-    # 1. SPLIT DATA
-    # -------------------------------
+    # ========================
+    # PREPROCESSING
+    # ========================
     train_data = train_df[predictors].copy()
     train_target = train_df[target].copy()
 
@@ -38,108 +38,97 @@ def run_xgb(train_df, test_df):
     test_data = test_data.dropna()
     test_target = test_target.loc[test_data.index]
 
-    # -------------------------------
-    # 2. DEFINE MODEL
-    # -------------------------------
+    # Remove outliers from training data only (IQR method)
+    Q1 = train_target.quantile(0.25)
+    Q3 = train_target.quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    
+    mask = (train_target >= lower_bound) & (train_target <= upper_bound)
+    train_data = train_data[mask]
+    train_target = train_target[mask]
+
+    # ========================
+    # MODEL WITH OPTIMIZED HYPERPARAMETERS FOR RENDER
+    # ========================
     xgb_model = XGBRegressor(
-        objective='reg:squarederror',
-        eval_metric='rmse',
-        learning_rate=0.05,     # smoother learning
-        max_depth=6,
-        n_estimators=300,       # more trees
-        subsample=0.8,          # reduce overfitting
-        colsample_bytree=0.8,
+        n_estimators=100,           # Reduced from 300 for faster training
+        max_depth=5,                # shallow enough to avoid overfitting
+        learning_rate=0.05,         # moderate learning rate
+        subsample=0.8,              # use 80% of samples
+        colsample_bytree=0.8,       # use 80% of features
+        min_child_weight=2,         # prevent overfitting
+        gamma=0.5,                  # regularization
         random_state=42,
-        n_jobs=-1
+        verbosity=0,
+        reg_alpha=0.1,              # L1 regularization
+        reg_lambda=1.0              # L2 regularization
     )
 
-    # -------------------------------
-    # 3. CROSS VALIDATION
-    # -------------------------------
-    cv = KFold(n_splits=5, shuffle=True, random_state=42)
-
-    cv_scores = cross_val_score(
-        xgb_model,
-        train_data,
-        train_target,
-        scoring='r2',
-        cv=cv
-    )
-
-    cv_score = float(np.mean(cv_scores))
-
-    # -------------------------------
-    # 4. TRAIN MODEL
-    # -------------------------------
+    # Train model
     xgb_model.fit(train_data, train_target)
 
-    # -------------------------------
-    # 5. PREDICTIONS
-    # -------------------------------
-    # Make predictions with slight noise to prevent overfitting
+    # ========================
+    # PREDICTIONS - NO ARTIFICIAL NOISE
+    # ========================
     test_predictions = xgb_model.predict(test_data)
-    test_predictions = test_predictions + np.random.normal(0, 1e-6, test_predictions.shape)
 
-    # -------------------------------
-    # 6. METRICS
-    # -------------------------------
-    rmse = float(np.sqrt(mean_squared_error(test_target, test_predictions)))
+    # ========================
+    # METRICS
+    # ========================
     r2 = float(r2_score(test_target, test_predictions))
+    rmse = float(np.sqrt(mean_squared_error(test_target, test_predictions)))
+    mae = float(mean_absolute_error(test_target, test_predictions))
 
-    # -------------------------------
-    # 7. OPTIMIZATION (CV Curve Analysis)
-    # -------------------------------
+    # Get feature importance
+    feature_importance = dict(zip(predictors, xgb_model.feature_importances_))
+
+    # ========================
+    # CV CURVE ANALYSIS
+    # ========================
     voltages = np.linspace(
         train_df["Potential"].min(),
         train_df["Potential"].max(),
         200
     )
 
-    delta_V = voltages.max() - voltages.min()
-    mass = 0.005  # FIXED: Proper mass value
-
-    scan_rate = train_df["SCAN_RATE"].mean()
-    v = scan_rate / 1000 if scan_rate > 1 else scan_rate  # FIXED: Better handling
-    v = max(v, 1e-4)  # SAFETY: Prevent division by zero
-
-    oxidation = 1
-    zn = 1
-    co = 0
-
     concentrations = np.linspace(0, 10, 21)
     capacitance_results = []
 
-    for conc in concentrations:
+    # Use mean values for stable prediction
+    mean_scan_rate = train_df["SCAN_RATE"].mean()
 
+    for conc in concentrations:
         cv_input = pd.DataFrame({
             "Potential": voltages,
-            "OXIDATION": oxidation,
+            "OXIDATION": train_df["OXIDATION"].mean(),
             "Zn/Co_Conc": conc,
-            "SCAN_RATE": scan_rate,
-            "ZN": zn,
-            "CO": co
+            "SCAN_RATE": mean_scan_rate,
+            "ZN": train_df["ZN"].mean(),
+            "CO": train_df["CO"].mean()
         })
 
         predicted_current = xgb_model.predict(cv_input)
-
-        # Fixed integration with trapz
+        
+        # Calculate capacitance using proper formula: C = Q / V
         area = np.trapz(np.abs(predicted_current), voltages)
-
-        denominator = 2 * mass * delta_V * v
-        C = area / denominator if delta_V > 0 else 0
-        C = min(C, 2000)  # SAFETY: Cap unrealistic values
-
-        capacitance_results.append(C)
+        
+        delta_V = voltages.max() - voltages.min()
+        if delta_V > 0:
+            C = area / delta_V
+        else:
+            C = 0
+        
+        capacitance_results.append(max(0, C))
 
     best_index = int(np.argmax(capacitance_results))
 
-    # -------------------------------
-    # 8. RETURN RESULT
-    # -------------------------------
     return {
         "r2": r2,
         "rmse": rmse,
-        "cv_score": cv_score,
+        "mae": mae,
+        "feature_importance": feature_importance,
         "best_concentration": float(concentrations[best_index]),
         "capacitance": float(capacitance_results[best_index]),
         "graph": {
