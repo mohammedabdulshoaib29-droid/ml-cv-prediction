@@ -1,8 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
-  LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  Cell, PieChart, Pie
+  LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import '../styles/PredictionGraphs.css';
 
@@ -14,8 +13,6 @@ const PredictionGraphs = ({ results }) => {
   }
 
   const hasGraphs = results.graphs && typeof results.graphs === 'object';
-
-  const COLORS = ['#64c8ff', '#00d4ff', '#4db8ff', '#5ac5ff', '#4080ff'];
 
   const prepareComparisonData = () => {
     const firstModel = Object.values(results.models)[0];

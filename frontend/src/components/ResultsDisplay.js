@@ -1,7 +1,6 @@
 import React from 'react';
 import { ClipLoader } from 'react-spinners';
 import CVGraph from './CVGraph';
-import PredictionGraphs from './PredictionGraphs';
 import '../styles/ResultsDisplay.css';
 
 const ResultsDisplay = ({ results, loading, error }) => {
@@ -28,40 +27,6 @@ const ResultsDisplay = ({ results, loading, error }) => {
   }
 
   const isCV = results.is_cv_analysis || results.graphs;
-
-  const downloadCSV = () => {
-    if (isCV) {
-      // For CV analysis, download the table data
-      let csv = 'Model,R²,RMSE,Capacitance,Best Concentration\n';
-      if (results.table) {
-        results.table.forEach(row => {
-          csv += `"${row.model}",${row.r2},${row.rmse},${row.capacitance},${row.best_concentration}\n`;
-        });
-      }
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
-      element.setAttribute('download', 'cv_analysis.csv');
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    } else {
-      // For general predictions
-      let csv = 'Model,Predictions\n';
-      Object.entries(results.models).forEach(([modelName, data]) => {
-        if (data.all_predictions) {
-          csv += `${modelName},${data.all_predictions.join(',')}\n`;
-        }
-      });
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
-      element.setAttribute('download', 'predictions.csv');
-      element.style.display = 'none';
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    }
-  };
 
   return (
     <div className="results-container">
