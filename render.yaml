@@ -1,5 +1,52 @@
 services:
   - type: web
+    name: ml-cv-prediction-backend
+    runtime: python
+    pythonVersion: 3.11
+    startCommand: cd backend && gunicorn -w 2 -b 0.0.0.0:8000 main:app --timeout 120 --access-logfile - --error-logfile -
+    buildCommand: cd backend && pip install -r requirements.txt
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: UPLOAD_FOLDER
+        value: /tmp/datasets
+      - key: MAX_UPLOAD_SIZE
+        value: "52428800"
+    autoDeploy: true
+    branch: main
+    healthCheckPath: /api/health/status
+    maxDeploy: 10
+    plans:
+      - plan: free
+
+  - type: static
+    name: ml-cv-prediction-frontend
+    staticPublishPath: ./frontend/build
+    buildCommand: cd frontend && npm install && npm run build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://ml-cv-prediction-backend.onrender.com/api
+    autoDeploy: true
+    branch: main
+    routes:
+      - path: /
+        destination: /index.html
+      - path: /*
+        destination: /index.html
+
+envGroups:
+  - name: Production
+    envVars:
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MAX_CONTENT_LENGTH
+        value: "52428800"
+services:
+  - type: web
     name: ml-cv-prediction
     runtime: python
     runtimeVersion: 3.11.10
