@@ -4,7 +4,7 @@ services:
     runtime: python
     runtimeVersion: 3.11.10
     buildCommand: bash build.sh
-    startCommand: cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 10000 --timeout-keep-alive 75 --timeout-graceful-shutdown 30 --workers 4 --loop uvloop --http httptools
+    startCommand: cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 10000 --timeout-keep-alive 75 --timeout-graceful-shutdown 30 --workers 2 --loop uvloop --http httptools --max-requests 1000 --max-requests-jitter 100
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10

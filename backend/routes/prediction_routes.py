@@ -8,12 +8,30 @@ import sys
 import traceback
 import time
 import asyncio
+import psutil
+import gc
 from concurrent.futures import ThreadPoolExecutor
 
 router = APIRouter()
 
+# Adaptive worker count based on available memory
+def get_optimal_workers():
+    """Determine optimal worker count based on system memory"""
+    try:
+        available_memory = psutil.virtual_memory().available / (1024**3)  # GB
+        if available_memory < 0.5:
+            return 1
+        elif available_memory < 1.0:
+            return 2
+        else:
+            return 4
+    except:
+        return 2
+
 # Thread pool for CPU-intensive model training (allows other requests to be handled)
-model_executor = ThreadPoolExecutor(max_workers=4)
+optimal_workers = get_optimal_workers()
+print("[PREDICTION] Using {} workers based on available memory".format(optimal_workers))
+model_executor = ThreadPoolExecutor(max_workers=optimal_workers)
 
 # Get datasets directory - works in both local and Render
 BACKEND_DIR = Path(__file__).parent.parent
@@ -271,3 +289,21 @@ async def predict(
 async def prediction_status():
     """Check if prediction service is ready"""
     return {"status": "ready"}
+
+@router.get("/health")
+async def health_check():
+    """Health check endpoint with memory info"""
+    try:
+        memory_info = psutil.virtual_memory()
+        return {
+            "status": "healthy",
+            "memory_percent": memory_info.percent,
+            "memory_available_gb": round(memory_info.available / (1024**3), 2),
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        return {
+            "status": "warning",
+            "message": "Health check error: {}".format(str(e)),
+            "timestamp": time.time()
+        }

@@ -5,6 +5,7 @@ from models.xgb import run_xgb
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+import gc
 
 def run_all_models(train_df, test_df):
     """
@@ -281,7 +282,7 @@ def run_all_models(train_df, test_df):
     # ==============================
     # FINAL OUTPUT
     # ==============================
-    return {
+    result = {
         "performance": performance,
         "best_model": best_model,
         "best_dopant": best_dopant,
@@ -293,3 +294,9 @@ def run_all_models(train_df, test_df):
         "table": table,
         "recommendations": recommendations
     }
+    
+    # Clean up memory after models are done
+    gc.collect()
+    print("[MODELS] Memory cleaned up after model execution")
+    
+    return result
