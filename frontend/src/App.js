@@ -21,7 +21,6 @@ const LoadingPlaceholder = () => <div style={{padding: '40px', textAlign: 'cente
 
 function App() {
   const [selectedDataset, setSelectedDataset] = useState('');
-  const [testDataset, setTestDataset] = useState('');
 
   return (
     <div className="app-container">
@@ -33,7 +32,6 @@ function App() {
         <div className="section-container">
           <DatasetManager 
             onDatasetSelected={setSelectedDataset}
-            onTestDatasetSelected={setTestDataset}
           />
           <ModelTrainer selectedDataset={selectedDataset} />
         </div>

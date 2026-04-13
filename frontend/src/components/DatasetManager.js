@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import '../styles/DatasetManager.css';
 
-const DatasetManager = ({ onDatasetSelected, onTestDatasetSelected }) => {
+const DatasetManager = ({ onDatasetSelected }) => {
   const [datasets, setDatasets] = useState([]);
   const [selectedDataset, setSelectedDataset] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,11 +13,7 @@ const DatasetManager = ({ onDatasetSelected, onTestDatasetSelected }) => {
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Load available datasets on mount
-  useEffect(() => {
-    loadDatasets();
-  }, []);
-
-  const loadDatasets = async () => {
+  const loadDatasets = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE}/datasets/list`);
@@ -29,7 +25,11 @@ const DatasetManager = ({ onDatasetSelected, onTestDatasetSelected }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE]);
+
+  useEffect(() => {
+    loadDatasets();
+  }, [loadDatasets]);
 
   const handleUploadDataset = async (e) => {
     const file = e.target.files[0];
