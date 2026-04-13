@@ -12,6 +12,20 @@
   width: 100%;
 }
 
+/* ML Application Section */
+.ml-app-section {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 2rem 0;
+  border-top: 2px solid #667eea;
+  border-bottom: 2px solid #667eea;
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
 /* Global utility classes for better spacing */
 section {
   margin: 0;
@@ -22,5 +36,14 @@ section {
   .app-container {
     font-size: 14px;
   }
+
+  .ml-app-section {
+    padding: 1rem 0;
+  }
+
+  .section-container {
+    padding: 0 0.5rem;
+  }
 }
+
 

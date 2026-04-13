@@ -1,7 +1,9 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import Footer from './components/Footer';
+import DatasetManager from './components/DatasetManager';
+import ModelTrainer from './components/ModelTrainer';
 import './App.css';
 import './styles/Global.css';
 
@@ -18,10 +20,25 @@ const ReferencesSection = lazy(() => import('./components/ReferencesSection'));
 const LoadingPlaceholder = () => <div style={{padding: '40px', textAlign: 'center', color: '#666'}}>Loading...</div>;
 
 function App() {
+  const [selectedDataset, setSelectedDataset] = useState('');
+  const [testDataset, setTestDataset] = useState('');
+
   return (
     <div className="app-container">
       <Header />
       <HeroSection />
+      
+      {/* ML Application Section */}
+      <div className="ml-app-section">
+        <div className="section-container">
+          <DatasetManager 
+            onDatasetSelected={setSelectedDataset}
+            onTestDatasetSelected={setTestDataset}
+          />
+          <ModelTrainer selectedDataset={selectedDataset} />
+        </div>
+      </div>
+
       <Suspense fallback={<LoadingPlaceholder />}>
         <OverviewSection />
       </Suspense>

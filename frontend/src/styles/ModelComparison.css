@@ -1,53 +1,324 @@
-.model-comparison-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+/* Model Comparison Styles */
+
+.model-comparison {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-top: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.comparison-section,
-.predictions-section,
-.feature-importance-section {
-  background: white;
+.model-comparison h2 {
+  color: #1e3a8a;
+  margin-bottom: 2rem;
+  font-size: 2em;
+  text-align: center;
+}
+
+.model-comparison h3 {
+  color: #2d5a1e;
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.3em;
+}
+
+.model-comparison h4 {
+  color: #3b82f6;
+  margin: 1rem 0 0.5rem 0;
+}
+
+/* Best Model Card */
+.best-model-card {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  padding: 2rem;
   border-radius: 12px;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+}
+
+.best-model-card h3 {
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1.5em;
+}
+
+.best-model-name {
+  font-size: 1.8em;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.best-model-score {
+  font-size: 1.3em;
+  margin-top: 0.5rem;
+}
+
+/* Charts Section */
+.charts-section {
+  margin: 2rem 0;
   padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.chart-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.comparison-section h2,
-.predictions-section h2,
-.feature-importance-section h2 {
+.chart-container h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* Model Tabs */
+.model-tabs {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.tab {
+  padding: 0.8rem 1.5rem;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.tab:hover {
+  border-color: #667eea;
   color: #667eea;
-  font-size: 1.3rem;
+}
+
+.tab.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Model Details */
+.model-details {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  border: 2px solid #e5e7eb;
+}
+
+.model-details h3 {
+  color: #1e3a8a;
   margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 1rem;
 }
 
-/* Recharts customization */
-.recharts-cartesian-axis-tick text {
-  fill: #666;
-  font-size: 12px;
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
 }
 
-.recharts-legend {
-  padding-top: 1rem;
+.metric-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  border-left: 4px solid #667eea;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.metric-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #3b82f6;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.metric-value {
+  font-size: 2em;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 0.5rem 0;
+}
+
+.metric-label {
+  font-size: 0.85em;
+  color: #999;
+  margin: 0;
+}
+
+/* Sample Info */
+.sample-info {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #2d5a1e;
+}
+
+.sample-info p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+/* Plot Section */
+.plot-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.prediction-plot {
+  width: 100%;
+}
+
+.no-data {
+  text-align: center;
+  color: #999;
+  padding: 2rem;
+}
+
+/* Capacitance Section */
+.capacitance-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #f59e0b;
+}
+
+.capacitance-section p {
+  margin: 0.5rem 0;
+  font-weight: 500;
 }
 
 /* Feature Importance */
-.feature-importance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.feature-importance-box {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+.importance-section {
+  background: white;
+  padding: 1.5rem;
   border-radius: 8px;
-  padding: 1rem;
-  border-left: 4px solid #667eea;
+  margin: 2rem 0;
 }
 
-.feature-importance-box h4 {
-  color: #667eea;
-  margin-bottom: 0.8rem;
+.importance-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.importance-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.importance-bar label {
+  min-width: 100px;
+  font-weight: 500;
+  color: #555;
+}
+
+.bar-container {
+  flex: 1;
+  height: 30px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.3s ease;
+}
+
+.importance-bar span {
+  min-width: 50px;
+  text-align: right;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Training History */
+.training-history {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #2d5a1e;
+}
+
+.training-history p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+/* Error Message */
+.error-message {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #dc2626;
+  margin: 1rem 0;
+}
+
+.loading {
+  text-align: center;
+  color: #999;
+  padding: 2rem;
+  font-size: 1.1em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .model-comparison {
+    padding: 1rem;
+  }
+
+  .tabs {
+    gap: 0.25rem;
+  }
+
+  .tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.9em;
   font-size: 1.1rem;
 }
 

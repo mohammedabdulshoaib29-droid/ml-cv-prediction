@@ -1,353 +1,356 @@
-# ML Web Application - Full Stack Setup Guide
+# ML Web App - Capacitance Prediction System
 
-## 📋 Project Overview
+A complete machine learning web application for predicting material-specific capacitance using multiple regression models with full dataset management and model evaluation.
 
-A complete full-stack machine learning web application that allows users to:
-- Upload and manage training datasets
-- Select a training dataset from dropdown
-- Upload test datasets
-- Train multiple ML models (ANN, RF, XGBoost)
-- View predictions and performance metrics
-- Visualize model comparisons
+## Features
 
-## 📁 Project Structure
+### ✨ Core Features
+- **Multi-Model Training**: ANN, Random Forest, XGBoost
+- **Dataset Management**: Upload, store, and switch between multiple datasets
+- **Train/Test Separation**: Strict separation for proper model evaluation
+- **Model Comparison**: Side-by-side performance metrics
+- **Interactive Visualizations**: Charts and graphs for insights
+- **Detailed Results**: R², RMSE, MAE, and feature importance
+
+### 🎯 ML Capabilities
+- Artificial Neural Network with dropout regularization
+- Random Forest with 200 estimators
+- XGBoost with optimized parameters
+- Automatic data preprocessing (scaling, cleaning)
+- Capacitance profile calculation
+- Feature importance analysis
+
+### 🎨 UI Features
+- Dataset dropdown selector
+- Drag-and-drop file upload
+- Real-time model training status
+- Comparative model dashboard
+- Performance metrics cards
+- Interactive prediction plots
+- Feature importance bars
+
+## Tech Stack
+
+### Backend
+- **Framework**: Flask with CORS support
+- **ML Libraries**: TensorFlow, scikit-learn, XGBoost
+- **Data Processing**: Pandas, NumPy
+- **Visualization**: Matplotlib, Seaborn
+
+### Frontend
+- **Framework**: React
+- **Charting**: Recharts
+- **Styling**: CSS3
+- **HTTP**: Axios
+
+## System Architecture
 
 ```
 ml-web-app/
 ├── backend/
-│   ├── main.py                          # FastAPI server
-│   ├── requirements.txt                 # Python dependencies
+│   ├── main.py              # Flask app entry point
+│   ├── requirements.txt     # Python dependencies
 │   ├── models/
-│   │   └── ml_models.py                 # ML model implementations
+│   │   ├── ann.py          # ANN model
+│   │   ├── rf.py           # Random Forest model
+│   │   ├── xgb.py          # XGBoost model
+│   │   └── orchestrator.py # Model coordinator
 │   ├── routes/
-│   │   ├── dataset_routes.py            # Dataset API endpoints
-│   │   └── prediction_routes.py         # Prediction API endpoints
-│   ├── utils/
-│   │   ├── preprocessing.py             # Data preprocessing
-│   │   └── evaluation.py                # Model evaluation metrics
-│   └── datasets/                        # Stored training datasets (auto-created)
+│   │   ├── dataset_routes.py   # Dataset management
+│   │   ├── model_routes.py     # Model training
+│   │   └── health_routes.py    # Health checks
+│   └── datasets/           # Training data storage
 │
 └── frontend/
-    ├── package.json                     # Node.js dependencies
-    ├── public/
-    │   └── index.html                   # Main HTML file
-    └── src/
-        ├── App.js                       # Main App component
-        ├── App.css                      # App styling
-        ├── index.js                     # React entry point
-        ├── index.css                    # Global styles
-        ├── services/
-        │   └── api.js                   # API service (axios)
-        ├── components/
-        │   ├── DatasetSelector.js       # Dataset selection component
-        │   ├── FileUploader.js          # File upload component
-        │   ├── ResultsDisplay.js        # Results display component
-        │   └── ModelComparison.js       # Visualization component (Recharts)
-        └── styles/
-            ├── DatasetSelector.css
-            ├── FileUploader.css
-            ├── ResultsDisplay.css
-            └── ModelComparison.css
+    ├── package.json
+    ├── src/
+    │   ├── App.js          # Main app component
+    │   ├── components/
+    │   │   ├── DatasetManager.js    # Dataset UI
+    │   │   ├── ModelTrainer.js      # Training UI
+    │   │   ├── ModelComparison.js   # Results display
+    │   │   ├── PerformanceChart.js  # Visualizations
+    │   │   └── PredictionPlot.js    # Prediction graphs
+    │   └── styles/
+    │       ├── DatasetManager.css
+    │       ├── ModelTrainer.css
+    │       └── ModelComparison.css
 ```
 
-## 🚀 Quick Start
+## Setup Instructions
 
 ### Prerequisites
 - Python 3.8+
 - Node.js 14+
-- npm
+- npm or yarn
+- Git
 
 ### Backend Setup
 
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend
-   ```
+1. **Navigate to backend directory**
+```bash
+cd backend
+```
 
-2. **Create virtual environment (optional but recommended):**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   # or
-   source venv/bin/activate  # macOS/Linux
-   ```
+2. **Create virtual environment**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. **Install dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-4. **Run FastAPI server:**
-   ```bash
-   python main.py
-   ```
-   
-   Or with uvicorn directly:
-   ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
+4. **Create .env file**
+```bash
+cp .env.example .env
+```
 
-   Server will be available at: `http://localhost:8000`
-   API Documentation: `http://localhost:8000/docs`
+5. **Run Flask server**
+```bash
+python main.py
+```
+
+The backend will start on `http://localhost:5000`
 
 ### Frontend Setup
 
-1. **Navigate to frontend directory:**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server:**
-   ```bash
-   npm start
-   ```
-
-   Frontend will open at: `http://localhost:3000`
-
-## 📊 API Endpoints
-
-### Dataset Management
-
-**GET /api/datasets**
-- Returns list of available training datasets
-- Response: `{ "datasets": [{ "name": "...", "size": ..., "type": "..." }] }`
-
-**POST /api/upload-dataset**
-- Upload a new training dataset
-- Body: FormData with `file` field
-- Response: `{ "message": "...", "filename": "...", "size": ... }`
-
-**DELETE /api/datasets/{dataset_name}**
-- Delete a dataset
-- Response: `{ "message": "..." }`
-
-### Predictions
-
-**POST /api/predict**
-- Train models and make predictions
-- Body: FormData with:
-  - `dataset_name`: Name of training dataset
-  - `test_file`: Test dataset file
-  - `model_type`: "all", "ann", "rf", or "xgb" (default: "all")
-- Response:
-  ```json
-  {
-    "task_type": "classification|regression",
-    "training_dataset": "...",
-    "test_samples": 100,
-    "models": {
-      "ann": {
-        "predictions": [...],
-        "all_predictions": [...],
-        "accuracy": 0.95,
-        "rmse": 0.12,
-        "mae": 0.08,
-        "training_status": "trained"
-      },
-      "rf": { ... },
-      "xgb": { ... }
-    },
-    "feature_importance": {
-      "rf": [...],
-      "xgb": [...]
-    }
-  }
-  ```
-
-**GET /api/predict/status**
-- Check if prediction service is ready
-- Response: `{ "status": "ready" }`
-
-## 📈 Features
-
-### Core Features
-✅ Dataset Management (upload, select, delete)
-✅ Multiple ML Models (ANN, RF, XGBoost)
-✅ Data Preprocessing (missing values, encoding, scaling)
-✅ Model Evaluation (accuracy, RMSE, MAE, R² score)
-✅ Responsive UI with real-time feedback
-
-### Visualization
-✅ Model Comparison Chart (Bar chart with accuracy, RMSE, MAE)
-✅ Predictions Visualization (Line chart comparing predictions)
-✅ Feature Importance Display (RF & XGBoost)
-
-### User Experience
-✅ Loading spinners during processing
-✅ Error handling and user-friendly messages
-✅ Download predictions as CSV
-✅ Model selection (single or all)
-✅ Clean, responsive UI (works on desktop & tablet)
-
-### Bonus Features Implemented
-✅ Single model OR all models selection
-✅ Feature importance visualization
-✅ Download predictions as CSV
-✅ Automatic data preprocessing
-✅ CORS support for cross-origin requests
-
-## 📝 Example Dataset Format
-
-Your datasets should have the following format:
-
-### CSV Example (BiFeO3_dataset.csv)
-```
-feature1,feature2,feature3,feature4,target
-1.2,3.4,5.6,7.8,10.5
-2.1,3.9,5.2,7.1,11.2
-3.5,4.2,6.1,8.3,12.1
-...
+1. **Navigate to frontend directory**
+```bash
+cd frontend
 ```
 
-### Excel Example (BiFeO3_dataset.xlsx)
-| feature1 | feature2 | feature3 | feature4 | target |
-|----------|----------|----------|----------|--------|
-| 1.2      | 3.4      | 5.6      | 7.8      | 10.5   |
-| 2.1      | 3.9      | 5.2      | 7.1      | 11.2   |
-| 3.5      | 4.2      | 6.1      | 8.3      | 12.1   |
-
-### Important Notes:
-- First row should contain headers
-- Target column can be named anything (last column is assumed as target if not found)
-- Supports both numerical and categorical features
-- Handles missing values automatically
-- Both training and test data should follow the same structure
-
-## 🔧 Configuration
-
-### Backend Configuration
-
-In `main.py`, you can modify:
-- Host and port in `uvicorn.run()`
-- CORS origins in the middleware
-- API prefix path
-
-In `models/ml_models.py`, you can adjust:
-- ANN architecture (hidden_layer_sizes)
-- Random Forest parameters (n_estimators)
-- XGBoost parameters (n_estimators, learning_rate)
-
-### Frontend Configuration
-
-In `frontend/src/services/api.js`, modify:
-```javascript
-const API_BASE_URL = 'http://localhost:8000/api';
+2. **Install dependencies**
+```bash
+npm install
 ```
 
-Change the port if your backend runs on a different port.
+3. **Create .env file (if not exists)**
+```
+REACT_APP_API_URL=http://localhost:5000/api
+```
 
-## 🧪 Testing the Application
+4. **Start React development server**
+```bash
+npm start
+```
 
-1. **Prepare sample datasets:**
-   - Create a CSV file with training data
-   - Create a CSV file with test data
+The frontend will open at `http://localhost:3000`
 
-2. **Upload training dataset:**
-   - Click "Upload New Training Dataset"
-   - Select your CSV/Excel file
-   - Click "Upload Dataset"
+## Usage Guide
 
-3. **Run prediction:**
-   - Select the uploaded dataset from dropdown
-   - Upload test dataset
-   - Choose model type (all or specific)
-   - Click "Run Prediction"
+### 1. Upload Training Dataset
+1. Click "Click to upload or drag file" in Dataset Management
+2. Select your .xlsx or .csv file
+3. File is validated and stored in `backend/datasets/`
 
-4. **View results:**
-   - See accuracy metrics for each model
-   - View sample predictions
-   - Compare models in visualization charts
-   - Download results as CSV
+### 2. Select Training Dataset
+1. Choose from dropdown of stored datasets
+2. View dataset preview for columns and statistics
+3. Selected dataset is highlighted
 
-## 🐛 Troubleshooting
+### 3. Upload Test Dataset
+1. In Model Training section, upload test data
+2. Ensure same columns as training data
 
-### Backend Issues
+### 4. Train Models
+1. Click "Start Training" button
+2. All 3 models train in sequence
+3. Training progress is displayed
+4. Results show automatically
 
-**Error: "ModuleNotFoundError"**
-- Solution: Ensure all dependencies are installed: `pip install -r requirements.txt`
+### 5. View Results
+1. Best model highlighted at top
+2. Click tabs to compare individual models
+3. View R², RMSE, MAE metrics
+4. Check actual vs predicted plots
+5. Analyze feature importance (RF & XGBoost)
 
-**Error: "CORS error" in frontend**
-- Solution: Check if backend is running and CORS is enabled in `main.py`
+## API Documentation
 
-**Error: "Port already in use"**
-- Solution: Change port: `uvicorn main:app --port 8001`
+### Dataset Endpoints
 
-### Frontend Issues
+**List all datasets**
+```
+GET /api/datasets/list
+```
 
-**Error: "Cannot GET /api/datasets"**
-- Check if backend is running on `http://localhost:8000`
-- Verify API_BASE_URL in `frontend/src/services/api.js`
+**Upload dataset**
+```
+POST /api/datasets/upload
+Content-Type: multipart/form-data
+Body: { file: <binary> }
+```
 
-**Error: "npm start fails"**
-- Delete `node_modules` folder and `package-lock.json`
-- Run `npm install` again
+**Preview dataset**
+```
+GET /api/datasets/preview/<dataset_name>
+```
 
-## 📦 Deployment
+**Delete dataset**
+```
+DELETE /api/datasets/delete/<dataset_name>
+```
 
-### Backend (Production)
+### Model Endpoints
 
-1. Install production server:
-   ```bash
-   pip install gunicorn
-   ```
+**Train all models**
+```
+POST /api/models/train
+Content-Type: multipart/form-data
+Body: {
+  train_dataset: <name>,
+  test_file: <binary>,
+  target: <column_name>
+}
+Response: {
+  success: true,
+  models: {
+    ANN: {...},
+    RandomForest: {...},
+    XGBoost: {...}
+  },
+  best_model: {...}
+}
+```
 
-2. Run with Gunicorn:
-   ```bash
-   gunicorn -w 4 -b 0.0.0.0:8000 main:app
-   ```
+**Compare models**
+```
+POST /api/models/compare
+(Same body as /train)
+Response: {
+  models_comparison: {...},
+  best_model: {...}
+}
+```
 
-3. Use environment variables for sensitive data (update `main.py` as needed)
+### Health Endpoints
 
-### Frontend (Production)
+**Check status**
+```
+GET /api/health/status
+```
 
-1. Build production bundle:
-   ```bash
-   npm run build
-   ```
+**Readiness check**
+```
+GET /api/health/ready
+```
 
-2. Serve with a static server (e.g., nginx, or use Flask to serve)
+## Data Format Requirements
 
-3. Update API_BASE_URL to your production backend URL
+### Input CSV/Excel Format
+```
+| Feature1 | Feature2 | Feature3 | Target |
+|----------|----------|----------|--------|
+| 10.5     | 5.2      | 1.0      | 150.5  |
+| 12.3     | 6.1      | 1.5      | 175.2  |
+```
 
-## 📚 Technology Stack
+### Required Columns (Default)
+- `Potential`: Voltage range
+- `OXIDATION`: Oxidation state
+- `Zn/Co_Conc`: Element concentration
+- `SCAN_RATE`: Scan rate of experiment
+- `ZN`, `CO`: Element flags
+- `Current`: Target variable (predictions)
 
-**Backend:**
-- FastAPI - Modern Python web framework
-- Scikit-learn - ML preprocessing and Random Forest
-- TensorFlow/Keras - Neural Network implementation
-- XGBoost - Gradient boosting
-- Pandas & NumPy - Data manipulation
-- Uvicorn - ASGI server
+**Note**: Customize column names in model functions if needed
 
-**Frontend:**
-- React 18 - UI library
-- Axios - HTTP client
-- Recharts - Data visualization
-- React Spinners - Loading indicators
-- CSS3 - Styling
+## Model Performance
 
-## 📄 License
+### Expected Metrics
+- **R² Score**: 0.8-0.99 (higher is better)
+- **RMSE**: Depends on target scale
+- **MAE**: Mean absolute error
 
-This project is open source and available for educational purposes.
+### Training Time
+- Approximate time: 1-5 minutes (depends on dataset size)
+- All 3 models trained sequentially
+- ANN: ~120-180s
+- Random Forest:~60-90s
+- XGBoost: ~45-75s
 
-## ✨ Enhancement Ideas
+## Troubleshooting
 
-1. Add user authentication and profiles
-2. Implement model caching to speed up predictions
-3. Add cross-validation and hyperparameter tuning
-4. Support for image datasets (CNN models)
-5. Real-time dataset statistics dashboard
-6. Model comparison metrics (precision, recall, F1)
-7. Batch prediction on multiple test files
-8. API key authentication
-9. Database for storing results
-10. Docker containerization for easy deployment
+### Common Issues
 
-## 🤝 Support
+**"Connection refused" error**
+- Ensure backend is running on port 5000
+- Check `REACT_APP_API_URL` in frontend `.env`
 
-For issues or questions, refer to the component-specific documentation or create an issue in your project repository.
+**"No module named..." errors**
+- Reinstall dependencies: `pip install -r requirements.txt`
+- Check Python version is 3.8+
+
+**Training fails with empty data**
+- Ensure test/train datasets have same columns
+- Check for missing values in critical columns
+- Validate data format (.xlsx or .csv)
+
+**Low R² or constant predictions**
+- Verify train/test data compatibility
+- Check target variable range
+- Ensure features have sufficient variation
+
+## Data Preprocessing Pipeline
+
+The system automatically handles:
+1. **Missing Value Imputation**: Median for numeric, mode for categorical
+2. **Feature Scaling**: RobustScaler (resistant to outliers)
+3. **Target Normalization**: StandardScaler (for proper evaluation)
+4. **Data Validation**: Checks for constant targets, empty datasets
+5. **Train/Test Separation**: Strict separation to prevent leakage
+
+## Performance Optimization
+
+- **Parallel Processing**: Multi-threaded model training
+- **Lazy Loading**: React components load on demand
+- **Bundle Optimization**: Minimal CSS/JS overhead
+- **Efficient Scaling**: RobustScaler for outlier handling
+
+## Security Considerations
+
+- Input validation on all file uploads
+- File size limits (50MB max)
+- CORS protection
+- Safe file naming (sanitization)
+- No sensitive data in logs
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m 'Add feature'`
+4. Push to branch: `git push origin feature/your-feature`
+5. Submit pull request
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Support
+
+For issues, questions, or suggestions:
+1. Check troubleshooting section above
+2. Review error messages in browser console `/api/models/train`
+3. Check backend logs for detailed error traces
+4. Verify data format matches requirements
+
+## Roadmap
+
+- [ ] Real-time model training progress updates
+- [ ] Batch prediction capability
+- [ ] Model serialization and loading
+- [ ] Cross-validation support
+- [ ] Hyperparameter tuning UI
+- [ ] Data visualization enhancements
+- [ ] Export results to PDF/Excel
+- [ ] User authentication
+
+## Acknowledgments
+
+- Built with React, Flask, and ML libraries
+- Inspired by modern ML workflows
+- Uses best practices for data science applications
