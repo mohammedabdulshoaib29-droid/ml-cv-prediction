@@ -3,7 +3,7 @@ ML Web App - Main Flask Application
 Capacitance Prediction with Dataset Management & Model Evaluation
 """
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import os
 import traceback
@@ -13,8 +13,8 @@ from pathlib import Path
 # Load environment variables
 load_dotenv()
 
-# Create Flask app
-app = Flask(__name__)
+# Create Flask app - disable automatic static serving
+app = Flask(__name__, static_folder=None)  # Disable Flask's automatic /static routing
 CORS(app)
 
 # Configuration
@@ -35,8 +35,7 @@ app.register_blueprint(model_bp, url_prefix='/api/models')
 app.register_blueprint(health_bp, url_prefix='/api/health')
 
 
-# Static file serving for React frontend
-FRONTEND_BUILD = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'build')
+# Static file serving for React frontend (root and catch-all routes)
 
 
 @app.route('/')
@@ -49,15 +48,29 @@ def serve_index():
 
 
 @app.route('/<path:filename>')
-def serve_static(filename):
-    """Serve static files from the React build directory"""
-    file_path = os.path.join(FRONTEND_BUILD, filename)
-    if os.path.exists(file_path):
-        return send_from_directory(FRONTEND_BUILD, filename)
-    # For SPA routing, serve index.html for any non-API routes
-    if os.path.exists(os.path.join(FRONTEND_BUILD, 'index.html')):
-        return send_from_directory(FRONTEND_BUILD, 'index.html')
-    return jsonify({'error': 'Not found', 'message': str(f'File not found: {filename}')}), 404
+def serve_spa_fallback(filename):
+    """Serve static files or index.html for SPA routing"""
+    # Skip API routes - let blueprints handle them
+    if filename.startswith('api/'):
+        return jsonify({'error': 'Not found', 'message': f'API endpoint not found: /{filename}'}), 404
+    
+    # Try to serve the requested file
+    full_path = os.path.abspath(os.path.join(FRONTEND_BUILD, filename))
+   
+    # Security: prevent directory traversal
+    if not full_path.startswith(os.path.abspath(FRONTEND_BUILD)):
+        return jsonify({'error': 'Forbidden'}), 403
+    
+    # Serve static files or fall back to index.html for SPA routing
+    if os.path.isfile(full_path):
+        return send_file(full_path, conditional=True)
+    
+    # For any non-existent route, serve index.html (SPA routing)
+    index_file = os.path.join(FRONTEND_BUILD, 'index.html')
+    if os.path.isfile(index_file):
+        return send_file(index_file, mimetype='text/html')
+    
+    return jsonify({'error': 'Frontend not found'}), 503
 
 
 @app.errorhandler(400)
@@ -76,5 +89,9 @@ def internal_error(e):
     return jsonify({'error': 'Internal server error', 'message': str(e)}), 500
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':    
+    print("\n=== REGISTERED ROUTES ===")
+    for rule in app.url_map.iter_rules():
+        print(f"{rule.rule} -> {rule.endpoint}")
+    print("=========================\n")
     app.run(debug=False, host='0.0.0.0', port=5000)
