@@ -79,6 +79,7 @@ def sample_data_for_fast_training(train_df, test_df, max_train_samples=150):
     - Reduces training time from 3+ min to <1 minute
     """
     original_train_size = len(train_df)
+    original_test_size = len(test_df)
     
     # If training data is small, use all of it
     if original_train_size <= max_train_samples:
@@ -93,6 +94,12 @@ def sample_data_for_fast_training(train_df, test_df, max_train_samples=150):
     sampled_train = train_df.sample(n=max_train_samples, random_state=42)
     print("[PREDICTION] Sampled {} training rows (was {}) - training time should be <1 minute".format(
         len(sampled_train), original_train_size))
+    
+    # Ensure minimum test set size (at least 20% of training or 10 samples, whichever is larger)
+    min_test_size = max(20, int(len(sampled_train) * 0.2))
+    if len(test_df) < min_test_size:
+        print("[PREDICTION] WARNING: Test set ({}) smaller than recommended ({}). This may result in negative R².".format(
+            len(test_df), min_test_size))
     
     return sampled_train, test_df
 

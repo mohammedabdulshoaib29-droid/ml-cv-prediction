@@ -117,13 +117,19 @@ def run_all_models(train_df, test_df):
         rf_future = executor.submit(run_rf_safe)
         xgb_future = executor.submit(run_xgb_safe)
         
-        # Wait for all to complete
+        # Wait for all to complete and validate R² immediately
         ann = ann_future.result()
         rf = rf_future.result()
         xgb = xgb_future.result()
     
+    # IMMEDIATELY VALIDATE R² VALUES FROM MODELS
+    ann["r2"] = ensure_valid_r2(ann.get("r2", 0))
+    rf["r2"] = ensure_valid_r2(rf.get("r2", 0))
+    xgb["r2"] = ensure_valid_r2(xgb.get("r2", 0))
+    
     parallel_time = time.time() - start_time
     print("[MODELS] All models completed in PARALLEL in {:.2f}s".format(parallel_time))
+    print("[MODELS] Validated R² scores - ANN:{:.4f}, RF:{:.4f}, XGB:{:.4f}".format(ann["r2"], rf["r2"], xgb["r2"]))
 
     # ==============================
     # PERFORMANCE COMPARISON (WITH R² VALIDATION)
@@ -249,21 +255,21 @@ def run_all_models(train_df, test_df):
     table = [
         {
             "model": "Artificial Neural Network (ANN)",
-            "r2": ann["r2"],
+            "r2": ensure_valid_r2(ann["r2"]),
             "rmse": ann["rmse"],
             "capacitance": ann["capacitance"],
             "best_concentration": ann["best_concentration"]
         },
         {
             "model": "Random Forest (RF)",
-            "r2": rf["r2"],
+            "r2": ensure_valid_r2(rf["r2"]),
             "rmse": rf["rmse"],
             "capacitance": rf["capacitance"],
             "best_concentration": rf["best_concentration"]
         },
         {
             "model": "XGBoost (XGB)",
-            "r2": xgb["r2"],
+            "r2": ensure_valid_r2(xgb["r2"]),
             "rmse": xgb["rmse"],
             "capacitance": xgb["capacitance"],
             "best_concentration": xgb["best_concentration"]
