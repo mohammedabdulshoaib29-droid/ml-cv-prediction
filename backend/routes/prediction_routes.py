@@ -47,6 +47,9 @@ CV_DATASET_CHOICES = {
     "CV_DATASET": "Full dataset (5000 rows - for custom splits)"
 }
 
+# CV Analysis required columns
+CV_REQUIRED_COLUMNS = ["Potential", "OXIDATION", "Zn/Co_Conc", "SCAN_RATE", "ZN", "CO", "Current"]
+
 def normalize_columns(df):
     """Normalize column names: strip whitespace, standardize format"""
     df.columns = [col.strip() for col in df.columns]
