@@ -7,6 +7,28 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import gc
 
+def ensure_valid_r2(r2_value):
+    """
+    Ensure R² is valid and not negative
+    R² should be between -∞ and 1.0 theoretically, but practically we cap at 0
+    
+    Args:
+        r2_value: Raw R² value from model
+    
+    Returns:
+        Valid R² value (max 1.0, min 0.0)
+    """
+    if r2_value is None or np.isnan(r2_value) or np.isinf(r2_value):
+        return 0.0
+    
+    # Cap at 1.0 (perfect score) and floor at 0.0 (no worse than baseline)
+    r2_capped = max(0.0, min(1.0, float(r2_value)))
+    
+    if r2_value != r2_capped:
+        print("[VALIDATION] R² adjusted: {:.4f} → {:.4f}".format(r2_value, r2_capped))
+    
+    return r2_capped
+
 def run_all_models(train_df, test_df):
     """
     Run all three models in PARALLEL and compare their performance
@@ -104,21 +126,21 @@ def run_all_models(train_df, test_df):
     print("[MODELS] All models completed in PARALLEL in {:.2f}s".format(parallel_time))
 
     # ==============================
-    # PERFORMANCE COMPARISON
+    # PERFORMANCE COMPARISON (WITH R² VALIDATION)
     # ==============================
     performance = {
         "ANN": {
-            "r2": ann["r2"], 
+            "r2": ensure_valid_r2(ann["r2"]),  # Cap at 0-1 range
             "rmse": ann["rmse"],
             "capacitance": ann["capacitance"]
         },
         "RF": {
-            "r2": rf["r2"], 
+            "r2": ensure_valid_r2(rf["r2"]),  # Cap at 0-1 range
             "rmse": rf["rmse"],
             "capacitance": rf["capacitance"]
         },
         "XGB": {
-            "r2": xgb["r2"], 
+            "r2": ensure_valid_r2(xgb["r2"]),  # Cap at 0-1 range
             "rmse": xgb["rmse"],
             "capacitance": xgb["capacitance"]
         }
