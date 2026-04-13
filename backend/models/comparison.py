@@ -29,7 +29,7 @@ def ensure_valid_r2(r2_value):
     
     return r2_capped
 
-def run_all_models(train_df, test_df, normalization_params=None):
+def run_all_models(train_df, test_df):
     """
     Run all three models in PARALLEL and compare their performance
     
@@ -37,17 +37,11 @@ def run_all_models(train_df, test_df, normalization_params=None):
     - Sequential: ~5-10 minutes (ANN~2min + RF~2min + XGBoost~2min)
     - Parallel: ~2-3 minutes (time of slowest model only)
     
-    Args:
-        train_df: Training data (already normalized by cross-dataset normalization)
-        test_df: Test data (already normalized by cross-dataset normalization)
-        normalization_params: Dict with 'min', 'max', 'range' from cross-dataset normalization
-    
     Returns:
         Dictionary with model comparison, best model, and recommendations
     """
     
     print("\n[MODELS] Starting model execution (PARALLEL MODE)...")
-    print("[MODELS] Normalization parameters: {}".format(normalization_params))
     start_time = time.time()
 
     # ==============================

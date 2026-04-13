@@ -40,8 +40,12 @@ DATASETS_DIR = BACKEND_DIR / "datasets"
 # Ensure datasets directory exists
 DATASETS_DIR.mkdir(parents=True, exist_ok=True)
 
-# CV Analysis required columns
-CV_REQUIRED_COLUMNS = ["Potential", "OXIDATION", "Zn/Co_Conc", "SCAN_RATE", "ZN", "CO", "Current"]
+# CV Analysis dataset choices
+CV_DATASET_CHOICES = {
+    "CV_DATASET_TRAIN": "Training set (70% of CV_DATASET - 3500 rows)",
+    "CV_DATASET_TEST": "Test set (30% of CV_DATASET - 1500 rows)",
+    "CV_DATASET": "Full dataset (5000 rows - for custom splits)"
+}
 
 def normalize_columns(df):
     """Normalize column names: strip whitespace, standardize format"""
@@ -68,71 +72,6 @@ def get_column_mapping(available_cols, required_cols):
     
     return None
 
-def normalize_cross_dataset(train_df, test_df):
-    """
-    CRITICAL FIX: Normalize both training and test data together
-    
-    Problem: When datasets have different ranges (e.g., training: 0.00004-0.0055,
-    test: -0.015-0.013), models trained on one range completely fail on the other
-    (R² = 0 = baseline performance).
-    
-    Solution: Use combined min/max of BOTH datasets to normalize the target
-    variable using Min-Max scaling (0-1 range). This ensures:
-    - Both datasets operate in the same numerical space
-    - Models can learn and generalize properly
-    - R² scores reflect real model performance
-    
-    Args:
-        train_df: Training dataframe (will be modified in-place)
-        test_df: Test dataframe (will be modified in-place)
-    
-    Returns:
-        Tuple of (normalized_train_df, normalized_test_df, normalization_params)
-    """
-    from sklearn.preprocessing import MinMaxScaler
-    
-    # Get the target variable (Current)
-    target = "Current"
-    
-    # Calculate combined statistics from BOTH datasets
-    combined_current = pd.concat([train_df[target], test_df[target]], ignore_index=True)
-    combined_min = combined_current.min()
-    combined_max = combined_current.max()
-    combined_range = combined_max - combined_min
-    
-    print("[PREDICTION] CROSS-DATASET NORMALIZATION:")
-    print("[PREDICTION]   Combined Current min: {:.6f}".format(combined_min))
-    print("[PREDICTION]   Combined Current max: {:.6f}".format(combined_max))
-    print("[PREDICTION]   Range: {:.6f}".format(combined_range))
-    print("[PREDICTION]   Training range: {:.6f} to {:.6f}".format(train_df[target].min(), train_df[target].max()))
-    print("[PREDICTION]   Test range: {:.6f} to {:.6f}".format(test_df[target].min(), test_df[target].max()))
-    
-    # Apply Min-Max scaling to normalize to [0, 1]
-    if combined_range > 0:
-        train_df_copy = train_df.copy()
-        test_df_copy = test_df.copy()
-        
-        # Normalize Current (target) to [0, 1] range
-        train_df_copy[target] = (train_df_copy[target] - combined_min) / combined_range
-        test_df_copy[target] = (test_df_copy[target] - combined_min) / combined_range
-        
-        print("[PREDICTION] ✓ Both datasets normalized to [0, 1] range")
-        print("[PREDICTION]   Training Current (normalized): {:.4f} to {:.4f}".format(
-            train_df_copy[target].min(), train_df_copy[target].max()))
-        print("[PREDICTION]   Test Current (normalized): {:.4f} to {:.4f}".format(
-            test_df_copy[target].min(), test_df_copy[target].max()))
-        
-        normalization_params = {
-            "min": combined_min,
-            "max": combined_max,
-            "range": combined_range
-        }
-        
-        return train_df_copy, test_df_copy, normalization_params
-    else:
-        print("[PREDICTION] WARNING: No variance in Current values, skipping normalization")
-        return train_df.copy(), test_df.copy(), {"min": combined_min, "max": combined_max, "range": 0}
-
 def sample_data_for_fast_training(train_df, test_df, max_train_samples=150):
     """
     Sample data to enable fast predictions while maintaining quality
@@ -154,6 +93,19 @@ def sample_data_for_fast_training(train_df, test_df, max_train_samples=150):
     # Sample efficiently: use stratified sampling if possible, else random
     print("[PREDICTION] Sampling training data: {} rows → {} rows for fast training".format(
         original_train_size, max_train_samples))
+    
+    # Random sampling with seed for reproducibility
+    sampled_train = train_df.sample(n=max_train_samples, random_state=42)
+    print("[PREDICTION] Sampled {} training rows (was {}) - training time should be <1 minute".format(
+        len(sampled_train), original_train_size))
+    
+    # Ensure minimum test set size (at least 20% of training or 10 samples, whichever is larger)
+    min_test_size = max(20, int(len(sampled_train) * 0.2))
+    if len(test_df) < min_test_size:
+        print("[PREDICTION] WARNING: Test set ({}) smaller than recommended ({}). This may result in negative R².".format(
+            len(test_df), min_test_size))
+    
+    return sampled_train, test_df
     
     # Random sampling with seed for reproducibility
     sampled_train = train_df.sample(n=max_train_samples, random_state=42)
@@ -247,13 +199,6 @@ async def predict(
             
             print("[PREDICTION] Loaded test data: {} rows".format(len(test_df)))
             print("[PREDICTION] Test columns after normalization: {}".format(list(test_df.columns)))
-            
-            # ============================================
-            # NORMALIZE DATASETS TOGETHER (CRITICAL FIX)
-            # ============================================
-            # This ensures both datasets operate in the same numerical space
-            # Prevents R²=0 (baseline) when datasets have different ranges
-            train_df, test_df, norm_params = normalize_cross_dataset(train_df, test_df)
             
             # ============================================
             # SAMPLE DATA FOR FAST TRAINING (<1 minute)
@@ -354,8 +299,7 @@ async def predict(
                     model_executor,
                     run_all_models,
                     train_df,
-                    test_df,
-                    norm_params
+                    test_df
                 )
                 elapsed = time.time() - start_time
                 print("[PREDICTION] Models completed in {:.2f}s".format(elapsed))
