@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../styles/CapacitorMetrics.css';
 
 function CapacitorMetrics({ results }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('calculator');
   
   // Default CV parameters (can be modified by user)
   const [cvParams, setCvParams] = useState({
@@ -79,12 +79,6 @@ function CapacitorMetrics({ results }) {
     <div className="capacitor-metrics">
       <div className="metrics-tabs">
         <button 
-          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          📊 Metrics Overview
-        </button>
-        <button 
           className={`tab-btn ${activeTab === 'calculator' ? 'active' : ''}`}
           onClick={() => setActiveTab('calculator')}
         >
@@ -99,40 +93,6 @@ function CapacitorMetrics({ results }) {
       </div>
 
       <div className="metrics-content">
-        {activeTab === 'overview' && (
-          <div className="metrics-overview">
-            <div className="metric-card primary">
-              <div className="metric-icon">⚡</div>
-              <div className="metric-info">
-                <h4>Specific Capacitance</h4>
-                <p className="metric-value">{calculateSpecificCapacitance()}</p>
-                <p className="metric-unit">F/g</p>
-                <p className="metric-desc">Capacitance per unit mass - higher is better for lightweight storage</p>
-              </div>
-            </div>
-
-            <div className="metric-card primary">
-              <div className="metric-icon">🔋</div>
-              <div className="metric-info">
-                <h4>Energy Density</h4>
-                <p className="metric-value">{calculateEnergyDensity()}</p>
-                <p className="metric-unit">Wh/kg</p>
-                <p className="metric-desc">Total energy stored per unit mass - determines storage capacity</p>
-              </div>
-            </div>
-
-            <div className="metric-card primary">
-              <div className="metric-icon">💨</div>
-              <div className="metric-info">
-                <h4>Power Density</h4>
-                <p className="metric-value">{calculatePowerDensity()}</p>
-                <p className="metric-unit">W/kg</p>
-                <p className="metric-desc">Power delivery rate per unit mass - determines speed of discharge</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'calculator' && (
           <div className="calculator-panel">
             <h3>Adjust CV Parameters</h3>
