@@ -147,23 +147,24 @@ def infer_target_column(train_df, requested_target=None):
 
 
 def resolve_feature_columns(train_df, inference_df, target_column, predictors=None):
+    missing_inference = []
+
     if predictors:
         missing_train = [column for column in predictors if column not in train_df.columns]
-        missing_inference = [column for column in predictors if inference_df is not None and column not in inference_df.columns]
         if missing_train:
             raise ValueError(f'Predictor columns not found in training dataset: {missing_train}')
-        if missing_inference:
-            raise ValueError(f'Predictor columns not found in inference dataset: {missing_inference}')
-        feature_candidates = list(predictors)
+
+        feature_candidates = [column for column in predictors if column in train_df.columns]
+        if inference_df is not None:
+            missing_inference = [column for column in feature_candidates if column not in inference_df.columns]
     else:
         excluded = {target_column}
         preferred_exclusions = {'Current', 'Capacitance'}
         excluded.update(column for column in preferred_exclusions if column in train_df.columns and column != target_column)
+        feature_candidates = [column for column in train_df.columns if column not in excluded]
 
         if inference_df is not None:
-            feature_candidates = [column for column in train_df.columns if column in inference_df.columns and column not in excluded]
-        else:
-            feature_candidates = [column for column in train_df.columns if column not in excluded]
+            missing_inference = [column for column in feature_candidates if column not in inference_df.columns]
 
     numeric_features = []
     rejected_features = []
@@ -172,7 +173,10 @@ def resolve_feature_columns(train_df, inference_df, target_column, predictors=No
             continue
 
         train_is_numeric = pd.api.types.is_numeric_dtype(train_df[column])
-        inference_is_numeric = True if inference_df is None else pd.api.types.is_numeric_dtype(inference_df[column])
+        inference_is_numeric = True
+
+        if inference_df is not None and column in inference_df.columns:
+            inference_is_numeric = pd.api.types.is_numeric_dtype(inference_df[column])
 
         if train_is_numeric and inference_is_numeric:
             numeric_features.append(column)
@@ -182,7 +186,7 @@ def resolve_feature_columns(train_df, inference_df, target_column, predictors=No
     if not numeric_features:
         raise ValueError('No numeric feature columns available for model training')
 
-    return numeric_features, rejected_features
+    return numeric_features, rejected_features, missing_inference
 
 
 def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale_features=False, split_mode='internal'):
@@ -206,7 +210,12 @@ def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale
         inference_df = ensure_capacitance_target(clean_dataset(deepcopy(test_df)))
         validate_data(inference_df)
 
-    feature_columns, rejected_features = resolve_feature_columns(train_data, inference_df, target_column, predictors)
+    feature_columns, rejected_features, missing_inference_features = resolve_feature_columns(
+        train_data,
+        inference_df,
+        target_column,
+        predictors
+    )
 
     dataset_for_split = train_data[feature_columns + [target_column]].copy()
     dataset_for_split = dataset_for_split.apply(pd.to_numeric, errors='coerce').dropna().reset_index(drop=True)
@@ -245,8 +254,19 @@ def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale
 
     inference_x = None
     if inference_df is not None and len(inference_df) > 0:
-        inference_features = inference_df[feature_columns].apply(pd.to_numeric, errors='coerce')
+        inference_features = inference_df.copy()
+
+        for column in feature_columns:
+            if column not in inference_features.columns:
+                inference_features[column] = np.nan
+
+        inference_features = inference_features[feature_columns].apply(pd.to_numeric, errors='coerce')
         inference_features = inference_features.fillna(inference_features.median(numeric_only=True))
+
+        for index, column in enumerate(feature_columns):
+            if inference_features[column].isna().all():
+                inference_features[column] = x_train_df[column].median()
+
         inference_x = imputer.transform(inference_features)
         if scale_features and scaler is not None:
             inference_x = scaler.transform(inference_x)
@@ -260,7 +280,8 @@ def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale
         'feature_columns': feature_columns,
         'target_column': target_column,
         'test_has_target': True,
-        'rejected_features': rejected_features,
+            'rejected_features': rejected_features,
+            'missing_inference_features': missing_inference_features,
         'train_samples': int(len(y_train_series)),
         'test_samples': int(len(y_eval_series)),
         'inference_samples': int(len(inference_df)) if inference_df is not None else 0,
