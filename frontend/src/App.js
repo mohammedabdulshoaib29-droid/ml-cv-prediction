@@ -53,7 +53,7 @@ function App() {
         <PerformanceSection />
       </Suspense>
       <Suspense fallback={<LoadingPlaceholder />}>
-        <InferenceSection />
+        <InferenceSection selectedDataset={selectedDataset} />
       </Suspense>
       <Suspense fallback={<LoadingPlaceholder />}>
         <ReferencesSection />

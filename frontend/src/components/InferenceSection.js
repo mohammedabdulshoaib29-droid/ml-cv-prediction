@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
 import FileUploader from './FileUploader';
-import DatasetSelector from './DatasetSelector';
 import ResultsDisplay from './ResultsDisplay';
 import CapacitorMetrics from './CapacitorMetrics';
 import { predictionService } from '../services/api';
 import '../styles/InferenceSection.css';
 
-function InferenceSection() {
-  const [selectedDataset, setSelectedDataset] = useState('');
-  const [selectedModel, setSelectedModel] = useState('all');
+function InferenceSection({ selectedDataset = '' }) {
   const [testFile, setTestFile] = useState(null);
+  const [selectedModel, setSelectedModel] = useState('all');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const handleDatasetSelect = (dataset) => {
-    setSelectedDataset(dataset);
-  };
 
   const handleFileSelect = (file) => {
     setTestFile(file);
@@ -24,7 +18,7 @@ function InferenceSection() {
 
   const handlePredict = async () => {
     if (!selectedDataset) {
-      setError('⚠️ Please select a training dataset');
+      setError('⚠️ Please select a training dataset from Dataset Management section first');
       return;
     }
 
@@ -68,19 +62,8 @@ function InferenceSection() {
         
         <div className="inference-content">
           <div className="inference-panel">
-            <h3>📊 Select Training Dataset</h3>
-            <DatasetSelector onDatasetSelect={handleDatasetSelect} onUploadSuccess={() => {}} />
-          </div>
-
-          <div className="inference-panel">
-            <h3>📤 Upload Test Data</h3>
-            {selectedDataset ? (
-              <FileUploader onFileSelect={handleFileSelect} label="Upload Test Dataset" />
-            ) : (
-              <div className="placeholder">
-                <p>Please select a training dataset first</p>
-              </div>
-            )}
+            <h3>� Upload Test Data</h3>
+            <FileUploader onFileSelect={handleFileSelect} label="Upload Test Dataset" />
           </div>
 
           <div className="inference-panel">
