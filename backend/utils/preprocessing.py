@@ -1,113 +1,188 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from typing import Tuple
+from sklearn.preprocessing import StandardScaler
+from typing import Dict, List, Optional
 
-class DataPreprocessor:
+
+DEFAULT_TARGET_CANDIDATES = [
+    'Current',
+    'current',
+    'Capacitance',
+    'capacitance',
+    'target',
+    'Target'
+]
+
+
+class RegressionPreprocessor:
     def __init__(self):
-        self.scaler = StandardScaler()
-        self.label_encoders = {}
-        self.feature_columns = None
-        self.target_column = None
-        
-    def load_data(self, file_path: str) -> pd.DataFrame:
-        """Load data from Excel or CSV file"""
-        try:
-            if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
-                df = pd.read_excel(file_path)
-            elif file_path.endswith('.csv'):
-                df = pd.read_csv(file_path)
-            else:
-                raise ValueError("File must be Excel or CSV format")
-            return df
-        except Exception as e:
-            raise ValueError(f"Error loading file: {str(e)}")
-    
-    def preprocess(self, df: pd.DataFrame, target_col: str = None, fit: bool = False) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Preprocess data: handle missing values, encode categorical, scale features
-        
-        Args:
-            df: Input dataframe
-            target_col: Name of target column (if None, last column is assumed)
-            fit: Whether to fit the preprocessor (training data)
-        
-        Returns:
-            X, y: Features and target arrays
-        """
-        df = df.copy()
-        
-        # Determine target column
-        if target_col is None:
-            target_col = df.columns[-1]
-        
-        if target_col not in df.columns:
-            # Try to use last column as target
-            target_col = df.columns[-1]
-        
-        self.target_column = target_col
-        
-        # Handle missing values
-        df = self._handle_missing_values(df)
-        
-        # Separate features and target
-        X = df.drop(columns=[target_col])
-        y = df[target_col]
-        
-        # Store feature columns
-        if fit:
-            self.feature_columns = X.columns.tolist()
-        
-        # Encode categorical variables
-        X = self._encode_categorical(X, fit=fit)
-        y = self._encode_target(y, fit=fit)
-        
-        # Scale features
-        if fit:
-            X = self.scaler.fit_transform(X)
-        else:
-            X = self.scaler.transform(X)
-        
-        return X, y.values if isinstance(y, pd.Series) else y
-    
-    def _handle_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Handle missing values using mean for numerical and mode for categorical"""
-        for col in df.columns:
-            if df[col].isnull().sum() > 0:
-                if df[col].dtype in ['float64', 'int64']:
-                    df[col].fillna(df[col].mean(), inplace=True)
-                else:
-                    df[col].fillna(df[col].mode()[0] if not df[col].mode().empty else 'Unknown', inplace=True)
-        return df
-    
-    def _encode_categorical(self, X: pd.DataFrame, fit: bool = False) -> np.ndarray:
-        """Encode categorical variables"""
-        X = X.copy()
-        
-        for col in X.columns:
-            if X[col].dtype == 'object':
-                if fit:
-                    self.label_encoders[col] = LabelEncoder()
-                    X[col] = self.label_encoders[col].fit_transform(X[col].astype(str))
-                else:
-                    if col in self.label_encoders:
-                        X[col] = self.label_encoders[col].transform(X[col].astype(str))
-        
-        return X.values
-    
-    def _encode_target(self, y: pd.Series, fit: bool = False) -> pd.Series:
-        """Encode target variable if categorical"""
-        if y.dtype == 'object':
-            if fit:
-                self.label_encoders['target'] = LabelEncoder()
-                return pd.Series(self.label_encoders['target'].fit_transform(y.astype(str)))
-            else:
-                if 'target' in self.label_encoders:
-                    return pd.Series(self.label_encoders['target'].transform(y.astype(str)))
-        return y
-    
-    def inverse_transform_predictions(self, y_pred: np.ndarray) -> np.ndarray:
-        """Inverse transform predictions if target was encoded"""
-        if 'target' in self.label_encoders:
-            return self.label_encoders['target'].inverse_transform(y_pred.astype(int))
-        return y_pred
+        self.feature_scaler = StandardScaler()
+        self.feature_columns: List[str] = []
+        self.target_column: Optional[str] = None
+        self.numeric_fill_values: Dict[str, float] = {}
+        self.fitted = False
+
+    def prepare_datasets(
+        self,
+        train_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+        predictors: Optional[List[str]] = None,
+        target_col: Optional[str] = None,
+        scale_features: bool = False
+    ) -> Dict:
+        train_df = train_df.copy()
+        test_df = test_df.copy()
+
+        if train_df.empty:
+            raise ValueError('Training dataset is empty')
+        if test_df.empty:
+            raise ValueError('Testing dataset is empty')
+
+        target_column = self._resolve_target_column(train_df, test_df, target_col)
+        feature_columns = self._resolve_feature_columns(train_df, test_df, target_column, predictors)
+
+        self.target_column = target_column
+        self.feature_columns = feature_columns
+
+        train_subset = train_df[feature_columns + [target_column]].copy()
+        test_subset = test_df[feature_columns + [target_column]].copy()
+
+        train_subset = self._coerce_numeric_columns(train_subset, feature_columns + [target_column])
+        test_subset = self._coerce_numeric_columns(test_subset, feature_columns + [target_column])
+
+        self.numeric_fill_values = {
+            column: float(train_subset[column].median()) if not train_subset[column].dropna().empty else 0.0
+            for column in feature_columns
+        }
+
+        for column in feature_columns:
+            train_subset[column] = train_subset[column].fillna(self.numeric_fill_values[column])
+            test_subset[column] = test_subset[column].fillna(self.numeric_fill_values[column])
+
+        train_subset = train_subset.dropna(subset=[target_column]).reset_index(drop=True)
+        test_subset = test_subset.dropna(subset=[target_column]).reset_index(drop=True)
+
+        if train_subset.empty:
+            raise ValueError('Training dataset has no usable rows after preprocessing')
+        if test_subset.empty:
+            raise ValueError('Testing dataset has no usable rows after preprocessing')
+
+        X_train = train_subset[feature_columns].to_numpy(dtype=float)
+        y_train = train_subset[target_column].to_numpy(dtype=float)
+        X_test = test_subset[feature_columns].to_numpy(dtype=float)
+        y_test = test_subset[target_column].to_numpy(dtype=float)
+
+        if np.unique(y_train).shape[0] <= 1:
+            raise ValueError('Target variable is constant in training data')
+
+        if scale_features:
+            X_train = self.feature_scaler.fit_transform(X_train)
+            X_test = self.feature_scaler.transform(X_test)
+            self.fitted = True
+
+        return {
+            'X_train': X_train,
+            'y_train': y_train,
+            'X_test': X_test,
+            'y_test': y_test,
+            'feature_columns': feature_columns,
+            'target_column': target_column,
+            'train_processed_df': train_subset,
+            'test_processed_df': test_subset
+        }
+
+    def transform_features(self, df: pd.DataFrame, scale_features: bool = False) -> np.ndarray:
+        if not self.feature_columns:
+            raise ValueError('Preprocessor has not been initialized with feature columns')
+
+        feature_df = df.copy()
+        for column in self.feature_columns:
+            if column not in feature_df.columns:
+                feature_df[column] = self.numeric_fill_values.get(column, 0.0)
+
+        feature_df = feature_df[self.feature_columns].copy()
+        feature_df = self._coerce_numeric_columns(feature_df, self.feature_columns)
+
+        for column in self.feature_columns:
+            feature_df[column] = feature_df[column].fillna(self.numeric_fill_values.get(column, 0.0))
+
+        X = feature_df.to_numpy(dtype=float)
+
+        if scale_features:
+            if not self.fitted:
+                raise ValueError('Feature scaler has not been fitted')
+            X = self.feature_scaler.transform(X)
+
+        return X
+
+    def _resolve_target_column(
+        self,
+        train_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+        target_col: Optional[str]
+    ) -> str:
+        if target_col and target_col in train_df.columns and target_col in test_df.columns:
+            return target_col
+
+        for candidate in DEFAULT_TARGET_CANDIDATES:
+            if candidate in train_df.columns and candidate in test_df.columns:
+                return candidate
+
+        common_columns = [column for column in train_df.columns if column in test_df.columns]
+        numeric_common_columns = [
+            column for column in common_columns
+            if pd.api.types.is_numeric_dtype(train_df[column]) or pd.api.types.is_numeric_dtype(test_df[column])
+        ]
+
+        if not numeric_common_columns:
+            raise ValueError('No common numeric columns available to use as target')
+
+        return numeric_common_columns[-1]
+
+    def _resolve_feature_columns(
+        self,
+        train_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+        target_column: str,
+        predictors: Optional[List[str]]
+    ) -> List[str]:
+        if predictors:
+            missing_columns = [
+                column for column in predictors
+                if column not in train_df.columns or column not in test_df.columns
+            ]
+            if missing_columns:
+                raise ValueError(f'Missing predictor columns: {", ".join(missing_columns)}')
+
+            numeric_predictors = []
+            for column in predictors:
+                train_numeric = pd.to_numeric(train_df[column], errors='coerce')
+                test_numeric = pd.to_numeric(test_df[column], errors='coerce')
+                if train_numeric.notna().any() and test_numeric.notna().any():
+                    numeric_predictors.append(column)
+
+            if not numeric_predictors:
+                raise ValueError('Provided predictor columns are not usable numeric features')
+
+            return numeric_predictors
+
+        common_columns = [column for column in train_df.columns if column in test_df.columns and column != target_column]
+        numeric_columns = []
+
+        for column in common_columns:
+            train_numeric = pd.to_numeric(train_df[column], errors='coerce')
+            test_numeric = pd.to_numeric(test_df[column], errors='coerce')
+            if train_numeric.notna().any() and test_numeric.notna().any():
+                numeric_columns.append(column)
+
+        if not numeric_columns:
+            raise ValueError('No common numeric feature columns found between training and testing datasets')
+
+        return numeric_columns
+
+    @staticmethod
+    def _coerce_numeric_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
+        coerced_df = df.copy()
+        for column in columns:
+            coerced_df[column] = pd.to_numeric(coerced_df[column], errors='coerce')
+        return coerced_df

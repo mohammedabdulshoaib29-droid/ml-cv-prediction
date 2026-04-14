@@ -1,70 +1,77 @@
 import numpy as np
-from sklearn.metrics import accuracy_score, mean_squared_error, r2_score, mean_absolute_error
-from typing import Dict
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from typing import Dict, List
+
+
+def _to_float_list(values: np.ndarray) -> List[float]:
+    return [float(value) for value in np.asarray(values).flatten().tolist()]
+
 
 class ModelEvaluator:
     @staticmethod
-    def evaluate(y_true: np.ndarray, y_pred: np.ndarray) -> Dict:
-        """
-        Evaluate model predictions
-        
-        Args:
-            y_true: True values
-            y_pred: Predicted values
-        
-        Returns:
-            Dictionary with evaluation metrics
-        """
-        metrics = {}
-        
-        # Ensure arrays are numpy arrays
-        y_true = np.array(y_true)
-        y_pred = np.array(y_pred)
-        
-        # Determine if classification or regression based on y_true
-        unique_count = len(np.unique(y_true))
-        total_count = len(y_true)
-        is_classification = unique_count <= min(20, max(2, total_count / 5))
-        
-        if is_classification:
-            try:
-                # Classification metrics - round predictions to nearest class
-                y_pred_rounded = np.round(y_pred).astype(int)
-                y_true_int = np.array(y_true).astype(int)
-                metrics['accuracy'] = float(accuracy_score(y_true_int, y_pred_rounded))
-                metrics['type'] = 'classification'
-            except Exception as e:
-                # Fallback to regression metrics if classification fails
-                metrics['accuracy'] = float(r2_score(y_true, y_pred))
-                metrics['type'] = 'regression'
-                metrics['rmse'] = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-                metrics['mae'] = float(mean_absolute_error(y_true, y_pred))
-                return metrics
+    def evaluate_regression(y_true: np.ndarray, y_pred: np.ndarray, train_samples: int, test_samples: int) -> Dict:
+        y_true = np.asarray(y_true, dtype=float).flatten()
+        y_pred = np.asarray(y_pred, dtype=float).flatten()
+
+        rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
+        mae = float(mean_absolute_error(y_true, y_pred))
+
+        if len(y_true) > 1 and np.unique(y_true).shape[0] > 1:
+            r2 = float(r2_score(y_true, y_pred))
         else:
-            # Regression metrics
-            try:
-                metrics['r2_score'] = float(r2_score(y_true, y_pred))
-                metrics['accuracy'] = float(r2_score(y_true, y_pred))  # Using R² as accuracy
-                metrics['type'] = 'regression'
-            except Exception as e:
-                metrics['accuracy'] = 0.0
-                metrics['type'] = 'regression'
-        
-        # Common metrics for both - with error handling
-        try:
-            metrics['rmse'] = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-            metrics['mae'] = float(mean_absolute_error(y_true, y_pred))
-        except Exception as e:
-            metrics['rmse'] = 0.0
-            metrics['mae'] = 0.0
-        
-        # Ensure all values are Python native types
-        metrics = {k: float(v) if isinstance(v, (np.floating, np.integer)) else v 
-                   for k, v in metrics.items()}
-        
+            r2 = 0.0
+
+        metrics = {
+            'r2_score': r2,
+            'rmse': rmse,
+            'mae': mae,
+            'predicted_capacitance_mean': float(np.mean(y_pred)) if len(y_pred) else 0.0,
+            'predicted_capacitance_min': float(np.min(y_pred)) if len(y_pred) else 0.0,
+            'predicted_capacitance_max': float(np.max(y_pred)) if len(y_pred) else 0.0,
+            'train_samples': int(train_samples),
+            'test_samples': int(test_samples)
+        }
+
         return metrics
-    
+
     @staticmethod
-    def get_predictions_with_confidence(y_pred: np.ndarray) -> list:
-        """Convert predictions to list format"""
-        return y_pred.tolist()
+    def build_plot_data(y_true: np.ndarray, y_pred: np.ndarray) -> Dict:
+        y_true = np.asarray(y_true, dtype=float).flatten()
+        y_pred = np.asarray(y_pred, dtype=float).flatten()
+        errors = y_true - y_pred
+
+        actual_vs_predicted = [
+            {
+                'actual': float(actual),
+                'predicted': float(predicted)
+            }
+            for actual, predicted in zip(y_true.tolist(), y_pred.tolist())
+        ]
+
+        error_distribution = [
+            {
+                'error': float(error)
+            }
+            for error in errors.tolist()
+        ]
+
+        capacitance_series = [
+            {
+                'index': int(index),
+                'predicted': float(predicted)
+            }
+            for index, predicted in enumerate(y_pred.tolist(), start=1)
+        ]
+
+        return {
+            'actual_vs_predicted': actual_vs_predicted,
+            'error_distribution': error_distribution,
+            'capacitance_series': capacitance_series
+        }
+
+    @staticmethod
+    def build_prediction_payload(y_true: np.ndarray, y_pred: np.ndarray) -> Dict:
+        return {
+            'actual': _to_float_list(y_true),
+            'predicted': _to_float_list(y_pred)
+        }

@@ -1,90 +1,53 @@
-import React, { Suspense, lazy, useState } from 'react';
-import Header from './components/Header';
-import HeroSection from './components/HeroSection';
-import Footer from './components/Footer';
+import React, { useMemo, useState } from 'react';
 import DatasetManager from './components/DatasetManager';
 import PredictionEngine from './components/PredictionEngine';
 import ResultsSection from './components/ResultsSection';
-import './App.css';
-import './styles/Global.css';
-
-// Lazy load heavy components for faster initial load
-const OverviewSection = lazy(() => import('./components/OverviewSection'));
-const ArchitectureSection = lazy(() => import('./components/ArchitectureSection'));
-const ComponentsSection = lazy(() => import('./components/ComponentsSection'));
-const InputOutputSection = lazy(() => import('./components/InputOutputSection'));
-const PerformanceSection = lazy(() => import('./components/PerformanceSection'));
-const ReferencesSection = lazy(() => import('./components/ReferencesSection'));
-
-// Loading placeholder
-const LoadingPlaceholder = () => <div style={{padding: '40px', textAlign: 'center', color: '#666'}}>Loading...</div>;
+import './styles/dashboard.css';
 
 function App() {
   const [selectedDataset, setSelectedDataset] = useState('');
   const [predictionResults, setPredictionResults] = useState(null);
 
-  const handlePredictionComplete = (results) => {
-    setPredictionResults(results);
-    // Scroll to results section
-    setTimeout(() => {
-      document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
-
-  const handleRunAnother = () => {
-    setPredictionResults(null);
-    // Scroll back to prediction engine
-    document.querySelector('.prediction-engine')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const hasResults = useMemo(() => {
+    return Boolean(predictionResults && predictionResults.success);
+  }, [predictionResults]);
 
   return (
-    <div className="app-container">
-      <Header />
-      <HeroSection />
-      
-      {/* ML Application Section - 3 Main Sections */}
-      <div className="ml-app-section">
-        <div className="section-container">
-          {/* Section 1: Dataset Management */}
-          <DatasetManager 
-            onDatasetSelected={setSelectedDataset}
-          />
-
-          {/* Section 2: Run Prediction */}
-          <PredictionEngine 
-            selectedDataset={selectedDataset}
-            onPredictionComplete={handlePredictionComplete}
-          />
-
-          {/* Section 3: Results */}
-          {predictionResults && (
-            <ResultsSection 
-              results={predictionResults}
-              onRunAnother={handleRunAnother}
-            />
-          )}
+    <div className="app-shell">
+      <header className="dashboard-hero">
+        <div>
+          <p className="dashboard-eyebrow">Machine Learning Dashboard</p>
+          <h1>Capacitance Prediction Workspace</h1>
+          <p className="dashboard-subtitle">
+            Select a stored training dataset, upload a testing dataset, and compare ANN,
+            Random Forest, and XGBoost predictions in one place.
+          </p>
         </div>
-      </div>
+        <div className="dashboard-hero-badge">
+          <span>Training Dataset</span>
+          <strong>{selectedDataset || 'Not selected'}</strong>
+        </div>
+      </header>
 
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <OverviewSection />
-      </Suspense>
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <ArchitectureSection />
-      </Suspense>
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <ComponentsSection />
-      </Suspense>
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <InputOutputSection />
-      </Suspense>
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <PerformanceSection />
-      </Suspense>
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <ReferencesSection />
-      </Suspense>
-      <Footer />
+      <main className="ml-dashboard-grid">
+        <section className="dashboard-panel panel-span-7">
+          <DatasetManager
+            selectedDataset={selectedDataset}
+            onSelectDataset={setSelectedDataset}
+          />
+        </section>
+
+        <section className="dashboard-panel panel-span-5">
+          <PredictionEngine
+            selectedDataset={selectedDataset}
+            onPredictionComplete={setPredictionResults}
+          />
+        </section>
+
+        <section className="dashboard-panel panel-span-12">
+          <ResultsSection results={predictionResults} hasResults={hasResults} />
+        </section>
+      </main>
     </div>
   );
 }

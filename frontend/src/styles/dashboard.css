@@ -1,0 +1,386 @@
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --border: #d9e2ec;
+  --text: #102a43;
+  --muted: #627d98;
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --success: #0f766e;
+  --danger: #dc2626;
+  --warning: #f59e0b;
+  --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.app-shell {
+  padding: 32px;
+}
+
+.dashboard-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.dashboard-eyebrow,
+.section-kicker {
+  margin: 0 0 8px;
+  color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.dashboard-hero h1,
+.section-header h2 {
+  margin: 0;
+}
+
+.dashboard-subtitle,
+.section-text,
+.card-heading p,
+.empty-state,
+.dataset-row p {
+  color: var(--muted);
+}
+
+.dashboard-hero-badge,
+.dashboard-panel,
+.upload-card,
+.dataset-list-card,
+.preview-card,
+.chart-card,
+.prediction-table-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.dashboard-hero-badge {
+  padding: 16px 20px;
+  min-width: 220px;
+}
+
+.dashboard-hero-badge span,
+.metadata-item span,
+.preview-stat span,
+.metric-chip span,
+.split-highlight span,
+.dataset-pill span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.ml-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.dashboard-panel {
+  padding: 24px;
+}
+
+.panel-span-12 {
+  grid-column: span 12;
+}
+
+.panel-span-7 {
+  grid-column: span 7;
+}
+
+.panel-span-5 {
+  grid-column: span 5;
+}
+
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-header,
+.dataset-toolbar,
+.upload-card,
+.card-heading,
+.split-highlight-card,
+.preview-meta,
+.metadata-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-select,
+input[type='file'],
+.primary-button,
+.secondary-button,
+.danger-button,
+.ghost-button {
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.dashboard-select,
+input[type='file'] {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.ghost-button {
+  padding: 12px 16px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary-button {
+  background: var(--primary);
+  color: #fff;
+}
+
+.primary-button:hover {
+  background: var(--primary-dark);
+}
+
+.primary-button-full {
+  width: 100%;
+}
+
+.secondary-button {
+  background: #eef2ff;
+  color: var(--primary);
+}
+
+.danger-button {
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.ghost-button {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.status-banner {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.status-success {
+  background: #ecfdf5;
+  color: var(--success);
+}
+
+.status-error {
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.dataset-pill-group,
+.dataset-row-actions,
+.upload-actions,
+.model-card-grid,
+.model-cards-grid,
+.charts-grid {
+  display: flex;
+  gap: 12px;
+}
+
+.dataset-pill,
+.preview-stat,
+.metadata-item,
+.metric-chip,
+.split-highlight {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.dataset-pill-accent,
+.split-highlight-muted {
+  background: #eef2ff;
+}
+
+.dataset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dataset-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.dataset-row-active {
+  border-color: var(--primary);
+  background: #f5f3ff;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  font-size: 14px;
+}
+
+.prediction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty-dashboard {
+  padding: 36px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.model-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.model-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.model-card-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.model-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.model-name {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.status-dot {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-dot-success {
+  color: var(--success);
+}
+
+.status-dot-error {
+  color: var(--danger);
+}
+
+.model-color-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.model-card-grid {
+  flex-wrap: wrap;
+}
+
+.metric-chip {
+  min-width: calc(50% - 6px);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chart-card,
+.prediction-table-card,
+.preview-card,
+.dataset-list-card {
+  padding: 20px;
+}
+
+.chart-card-wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 1100px) {
+  .panel-span-7,
+  .panel-span-5,
+  .panel-span-12,
+  .chart-card-wide {
+    grid-column: span 12;
+  }
+
+  .ml-dashboard-grid,
+  .charts-grid,
+  .model-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero,
+  .section-header,
+  .dataset-toolbar,
+  .upload-card,
+  .split-highlight-card,
+  .preview-meta,
+  .metadata-bar {
+    flex-direction: column;
+  }
+}
