@@ -1,0 +1,279 @@
+/* Prediction Engine Section */
+.prediction-engine {
+  background: linear-gradient(135deg, #f5f7fa 0%, #fff 100%);
+  padding: 60px 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.prediction-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.prediction-engine h2 {
+  font-size: 2.5rem;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.prediction-engine .section-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.prediction-content {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Prediction Step */
+.prediction-step {
+  margin-bottom: 40px;
+}
+
+.prediction-step:last-of-type {
+  margin-bottom: 30px;
+}
+
+.prediction-step h3 {
+  font-size: 1.2rem;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* File Upload Area */
+.file-upload-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.file-upload-area:hover {
+  border-color: #4CAF50;
+  background: #f0f8f0;
+}
+
+.file-upload-area.active {
+  border-color: #4CAF50;
+  background: #e8f5e9;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.1);
+}
+
+.file-upload-area.has-file {
+  border-color: #4CAF50;
+  background: #f0f8f0;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-label {
+  cursor: pointer;
+  display: block;
+  user-select: none;
+}
+
+.file-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-icon {
+  font-size: 2rem;
+  display: block;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #1a1a1a;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.file-size {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  display: block;
+}
+
+.upload-text {
+  font-size: 1rem;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.85rem;
+  color: #999;
+  display: block;
+}
+
+/* Model Selector */
+.model-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+@media (max-width: 600px) {
+  .model-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
+.model-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f9f9f9;
+}
+
+.model-option:hover {
+  border-color: #4CAF50;
+  background: #f0f8f0;
+}
+
+.model-option input[type='radio'] {
+  margin-top: 3px;
+  accent-color: #4CAF50;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.model-option input[type='radio']:checked + .option-label,
+.model-option input[type='radio']:checked + .option-label + .option-desc {
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.model-option .option-label {
+  font-size: 0.95rem;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.model-option .option-desc {
+  font-size: 0.8rem;
+  color: #999;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Error Message */
+.error-message {
+  background: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin: 20px 0;
+  font-size: 0.95rem;
+}
+
+/* Start Prediction Button */
+.start-prediction-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.start-prediction-btn:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.start-prediction-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.start-prediction-btn.loading {
+  opacity: 0.8;
+}
+
+.play-icon {
+  font-size: 1.1rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .prediction-container {
+    padding: 20px;
+  }
+
+  .prediction-engine h2 {
+    font-size: 1.8rem;
+  }
+
+  .prediction-content {
+    padding: 20px;
+  }
+
+  .file-upload-area {
+    padding: 25px 15px;
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
+  }
+}

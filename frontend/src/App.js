@@ -3,7 +3,8 @@ import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import Footer from './components/Footer';
 import DatasetManager from './components/DatasetManager';
-import ModelTrainer from './components/ModelTrainer';
+import PredictionEngine from './components/PredictionEngine';
+import ResultsSection from './components/ResultsSection';
 import './App.css';
 import './styles/Global.css';
 
@@ -21,19 +22,48 @@ const LoadingPlaceholder = () => <div style={{padding: '40px', textAlign: 'cente
 
 function App() {
   const [selectedDataset, setSelectedDataset] = useState('');
+  const [predictionResults, setPredictionResults] = useState(null);
+
+  const handlePredictionComplete = (results) => {
+    setPredictionResults(results);
+    // Scroll to results section
+    setTimeout(() => {
+      document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleRunAnother = () => {
+    setPredictionResults(null);
+    // Scroll back to prediction engine
+    document.querySelector('.prediction-engine')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="app-container">
       <Header />
       <HeroSection />
       
-      {/* ML Application Section */}
+      {/* ML Application Section - 3 Main Sections */}
       <div className="ml-app-section">
         <div className="section-container">
+          {/* Section 1: Dataset Management */}
           <DatasetManager 
             onDatasetSelected={setSelectedDataset}
           />
-          <ModelTrainer selectedDataset={selectedDataset} />
+
+          {/* Section 2: Run Prediction */}
+          <PredictionEngine 
+            selectedDataset={selectedDataset}
+            onPredictionComplete={handlePredictionComplete}
+          />
+
+          {/* Section 3: Results */}
+          {predictionResults && (
+            <ResultsSection 
+              results={predictionResults}
+              onRunAnother={handleRunAnother}
+            />
+          )}
         </div>
       </div>
 
@@ -51,9 +81,6 @@ function App() {
       </Suspense>
       <Suspense fallback={<LoadingPlaceholder />}>
         <PerformanceSection />
-      </Suspense>
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <InferenceSection selectedDataset={selectedDataset} />
       </Suspense>
       <Suspense fallback={<LoadingPlaceholder />}>
         <ReferencesSection />
