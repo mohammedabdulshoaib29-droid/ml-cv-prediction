@@ -1,18 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AppShell from './components/app/AppShell';
-import HomePage from './pages/HomePage';
-import DatasetManagementPage from './pages/DatasetManagementPage';
-import ModelTrainingPage from './pages/ModelTrainingPage';
-import PredictionPage from './pages/PredictionPage';
+import WorkflowPage from './pages/WorkflowPage';
 import DashboardPage from './pages/DashboardPage';
 import PerformanceAnalyticsPage from './pages/PerformanceAnalyticsPage';
 import './styles/app-shell.css';
 
 const ROUTES = {
-  '/': 'Home',
-  '/datasets': 'Dataset Management',
-  '/training': 'Model Training',
-  '/prediction': 'Prediction',
+  '/': 'Workflow',
   '/dashboard': 'Dashboard',
   '/analytics': 'Performance Analytics',
 };
@@ -96,19 +90,13 @@ function App() {
 
   const renderPage = () => {
     switch (currentRoute) {
-      case '/datasets':
-        return <DatasetManagementPage {...sharedPageProps} />;
-      case '/training':
-        return <ModelTrainingPage {...sharedPageProps} />;
-      case '/prediction':
-        return <PredictionPage {...sharedPageProps} />;
       case '/dashboard':
         return <DashboardPage {...sharedPageProps} />;
       case '/analytics':
         return <PerformanceAnalyticsPage {...sharedPageProps} />;
       case '/':
       default:
-        return <HomePage {...sharedPageProps} />;
+        return <WorkflowPage {...sharedPageProps} />;
     }
   };
 
