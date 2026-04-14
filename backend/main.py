@@ -39,6 +39,12 @@ app.register_blueprint(health_bp, url_prefix='/api/health')
 # Static file serving for React frontend (root and catch-all routes)
 
 
+@app.route('/ping')
+def ping():
+    """Simple ping endpoint for testing"""
+    return jsonify({'status': 'pong', 'service': 'flask'}), 200
+
+
 @app.route('/')
 def serve_index():
     """Serve the React index.html file"""
