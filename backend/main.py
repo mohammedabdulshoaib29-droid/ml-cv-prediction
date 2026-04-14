@@ -19,6 +19,7 @@ CORS(app)
 
 # Configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'datasets')
+FRONTEND_BUILD = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'build')
 ALLOWED_EXTENSIONS = {'xlsx', 'csv'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
