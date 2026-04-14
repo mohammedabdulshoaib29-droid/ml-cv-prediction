@@ -43,7 +43,7 @@ LATEST_STATE = {
 # Import routes after app setup
 from routes.dataset_routes import dataset_bp, _build_dataset_summary, _read_dataset, allowed_file
 from routes.health_routes import health_bp
-from routes.model_routes import model_bp, predict as run_model_pipeline
+from routes.model_routes import model_bp, train as run_model_pipeline
 
 # Register blueprints
 app.register_blueprint(dataset_bp, url_prefix='/api/datasets')
