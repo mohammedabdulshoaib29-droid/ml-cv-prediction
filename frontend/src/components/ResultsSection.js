@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../styles/ResultsSection.css';
 
 const ResultsSection = ({ results, onRunAnother }) => {
-  const [expandedMetrics, setExpandedMetrics] = useState(null);
-
   if (!results) {
     return null;
   }

@@ -14,7 +14,6 @@ const ArchitectureSection = lazy(() => import('./components/ArchitectureSection'
 const ComponentsSection = lazy(() => import('./components/ComponentsSection'));
 const InputOutputSection = lazy(() => import('./components/InputOutputSection'));
 const PerformanceSection = lazy(() => import('./components/PerformanceSection'));
-const InferenceSection = lazy(() => import('./components/InferenceSection'));
 const ReferencesSection = lazy(() => import('./components/ReferencesSection'));
 
 // Loading placeholder
