@@ -10,18 +10,19 @@ from models.xgb import run_xgb
 import traceback
 
 
-def train_all_models(train_df, test_df, predictors=None, target=None):
+def train_all_models(train_df, test_df, predictors=None, target=None, model_type='all'):
     """
-    Train all three models in sequence
+    Train models - can be all or specific ones
     
     Args:
         train_df: Training dataframe
         test_df: Testing dataframe
         predictors: List of feature columns
         target: Target column name
+        model_type: Which models to train: 'all', 'ann', 'rf', 'xgb'
     
     Returns:
-        Dictionary with results from all models
+        Dictionary with results from trained models
     """
     
     results = {
@@ -32,20 +33,24 @@ def train_all_models(train_df, test_df, predictors=None, target=None):
     }
     
     try:
-        # Train ANN
-        print("[*] Training ANN...")
-        ann_result = run_ann(train_df, test_df, predictors, target)
-        results['models']['ANN'] = ann_result
+        # Train based on model_type
+        if model_type in ['all', 'ann']:
+            # Train ANN
+            print("[*] Training ANN...")
+            ann_result = run_ann(train_df, test_df, predictors, target)
+            results['models']['ANN'] = ann_result
         
-        # Train Random Forest
-        print("[*] Training Random Forest...")
-        rf_result = run_rf(train_df, test_df, predictors, target)
-        results['models']['RandomForest'] = rf_result
+        if model_type in ['all', 'rf']:
+            # Train Random Forest
+            print("[*] Training Random Forest...")
+            rf_result = run_rf(train_df, test_df, predictors, target)
+            results['models']['RandomForest'] = rf_result
         
-        # Train XGBoost
-        print("[*] Training XGBoost...")
-        xgb_result = run_xgb(train_df, test_df, predictors, target)
-        results['models']['XGBoost'] = xgb_result
+        if model_type in ['all', 'xgb']:
+            # Train XGBoost
+            print("[*] Training XGBoost...")
+            xgb_result = run_xgb(train_df, test_df, predictors, target)
+            results['models']['XGBoost'] = xgb_result
         
         # Find best model
         best_r2 = -np.inf

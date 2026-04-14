@@ -78,7 +78,7 @@ export const predictionService = {
       formData.append('test_file', testFile);
       formData.append('model_type', modelType);
 
-      const response = await axiosInstance.post(`/predict`, formData, {
+      const response = await axiosInstance.post(`/models/predict`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.data;

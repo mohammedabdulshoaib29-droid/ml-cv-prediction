@@ -168,3 +168,78 @@ def compare_models():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@model_bp.route('/predict', methods=['POST'])
+def predict():
+    """
+    Run predictions using trained models
+    
+    Expected form data:
+    - dataset_name: Name of training dataset
+    - test_file: Test dataset file (xlsx or csv)
+    - model_type: Type of model to use ('all', 'ann', 'rf', 'xgb')
+    """
+    try:
+        # Get training dataset name
+        dataset_name = request.form.get('dataset_name')
+        if not dataset_name:
+            return jsonify({'success': False, 'error': 'Dataset name not specified'}), 400
+        
+        # Load training dataset
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        train_path = os.path.join(upload_folder, secure_filename(dataset_name))
+        
+        if not os.path.exists(train_path):
+            return jsonify({'success': False, 'error': 'Training dataset not found'}), 404
+        
+        try:
+            if dataset_name.endswith('.xlsx'):
+                train_df = pd.read_excel(train_path)
+            else:
+                train_df = pd.read_csv(train_path)
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to load training dataset: {str(e)}'
+            }), 400
+        
+        # Get test dataset from upload
+        if 'test_file' not in request.files:
+            return jsonify({'success': False, 'error': 'Test dataset not provided'}), 400
+        
+        test_file = request.files['test_file']
+        if test_file.filename == '':
+            return jsonify({'success': False, 'error': 'No test file selected'}), 400
+        
+        try:
+            if test_file.filename.endswith('.xlsx'):
+                test_df = pd.read_excel(test_file)
+            elif test_file.filename.endswith('.csv'):
+                test_df = pd.read_csv(test_file)
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Test file must be .xlsx or .csv'
+                }), 400
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to load test dataset: {str(e)}'
+            }), 400
+        
+        # Get model type (default: all)
+        model_type = request.form.get('model_type', 'all')
+        
+        # Train models
+        results = train_all_models(train_df, test_df, model_type=model_type)
+        
+        return jsonify(results), 200 if results.get('success') else 400
+    
+    except Exception as e:
+        print(f"Error in predict: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
