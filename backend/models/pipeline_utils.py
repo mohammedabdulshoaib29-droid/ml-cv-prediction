@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
@@ -28,6 +29,62 @@ TARGET_CANDIDATES = [
     'label',
     'Label'
 ]
+
+
+def calculate_capacitance(df):
+    required_columns = {'Potential', 'Current', 'SCAN_RATE'}
+    if not required_columns.issubset(df.columns):
+        return np.nan
+
+    voltages = pd.to_numeric(df['Potential'], errors='coerce').dropna().to_numpy(dtype=float)
+    currents = pd.to_numeric(df['Current'], errors='coerce').dropna().to_numpy(dtype=float)
+    scan_rate_series = pd.to_numeric(df['SCAN_RATE'], errors='coerce').dropna()
+
+    if len(voltages) == 0 or len(currents) == 0 or scan_rate_series.empty:
+        return np.nan
+
+    usable_length = min(len(voltages), len(currents))
+    voltages = voltages[:usable_length]
+    currents = currents[:usable_length]
+
+    delta_v = float(np.max(voltages) - np.min(voltages)) if usable_length else 0.0
+    mass = 0.002
+    scan_rate = float(scan_rate_series.mean()) if not scan_rate_series.empty else 0.0
+    v = scan_rate / 1000 if scan_rate != 0 else 1e-6
+    area = float(np.trapz(np.abs(currents), voltages)) if usable_length > 1 else 0.0
+
+    return area / (2 * mass * delta_v * v) if delta_v != 0 else 0.0
+
+
+def validate_data(df):
+    print('Shape:', df.shape)
+    print('Missing values:\n', df.isnull().sum())
+    for col in df.columns:
+        if df[col].nunique(dropna=True) < 2:
+            print(f'⚠️ Column {col} has low variance')
+
+
+def clean_dataset(df):
+    cleaned = df.copy()
+    cleaned = cleaned.dropna().reset_index(drop=True)
+
+    if 'Current' in cleaned.columns and not cleaned.empty:
+        current_series = pd.to_numeric(cleaned['Current'], errors='coerce')
+        current_mean = current_series.mean()
+        cleaned = cleaned.loc[current_series != current_mean].copy()
+
+    cleaned = cleaned.dropna().reset_index(drop=True)
+    return cleaned
+
+
+def ensure_capacitance_target(df):
+    enriched = df.copy()
+
+    if 'Capacitance' not in enriched.columns and {'Potential', 'Current', 'SCAN_RATE'}.issubset(enriched.columns):
+        capacitance_value = calculate_capacitance(enriched)
+        enriched['Capacitance'] = capacitance_value
+
+    return enriched
 
 
 def empty_model_result(model_name, error=None):
@@ -62,7 +119,8 @@ def empty_model_result(model_name, error=None):
         'metadata': {
             'feature_columns': [],
             'target_column': None,
-            'test_has_target': False
+            'test_has_target': False,
+            'split_mode': 'unknown'
         }
     }
 
@@ -70,6 +128,9 @@ def empty_model_result(model_name, error=None):
 def infer_target_column(train_df, requested_target=None):
     if requested_target and requested_target in train_df.columns:
         return requested_target
+
+    if 'Capacitance' in train_df.columns:
+        return 'Capacitance'
 
     for column in TARGET_CANDIDATES:
         if column in train_df.columns:
@@ -85,87 +146,125 @@ def infer_target_column(train_df, requested_target=None):
     raise ValueError('Could not infer target column because the training dataset has no columns')
 
 
-def resolve_feature_columns(train_df, test_df, target_column, predictors=None):
+def resolve_feature_columns(train_df, inference_df, target_column, predictors=None):
     if predictors:
         missing_train = [column for column in predictors if column not in train_df.columns]
-        missing_test = [column for column in predictors if column not in test_df.columns]
+        missing_inference = [column for column in predictors if inference_df is not None and column not in inference_df.columns]
         if missing_train:
             raise ValueError(f'Predictor columns not found in training dataset: {missing_train}')
-        if missing_test:
-            raise ValueError(f'Predictor columns not found in test dataset: {missing_test}')
+        if missing_inference:
+            raise ValueError(f'Predictor columns not found in inference dataset: {missing_inference}')
         feature_candidates = list(predictors)
     else:
-        shared_columns = [column for column in train_df.columns if column in test_df.columns and column != target_column]
-        feature_candidates = shared_columns
+        excluded = {target_column}
+        preferred_exclusions = {'Current', 'Capacitance'}
+        excluded.update(column for column in preferred_exclusions if column in train_df.columns and column != target_column)
+
+        if inference_df is not None:
+            feature_candidates = [column for column in train_df.columns if column in inference_df.columns and column not in excluded]
+        else:
+            feature_candidates = [column for column in train_df.columns if column not in excluded]
 
     numeric_features = []
     rejected_features = []
     for column in feature_candidates:
         if column == target_column:
             continue
-        if pd.api.types.is_numeric_dtype(train_df[column]) and pd.api.types.is_numeric_dtype(test_df[column]):
+
+        train_is_numeric = pd.api.types.is_numeric_dtype(train_df[column])
+        inference_is_numeric = True if inference_df is None else pd.api.types.is_numeric_dtype(inference_df[column])
+
+        if train_is_numeric and inference_is_numeric:
             numeric_features.append(column)
         else:
             rejected_features.append(column)
 
     if not numeric_features:
-        raise ValueError('No shared numeric feature columns available for training and testing')
+        raise ValueError('No numeric feature columns available for model training')
 
     return numeric_features, rejected_features
 
 
-def prepare_datasets(train_df, test_df, predictors=None, target=None, scale_features=False):
-    train_data = deepcopy(train_df)
-    test_data = deepcopy(test_df)
+def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale_features=False, split_mode='internal'):
+    train_data = ensure_capacitance_target(clean_dataset(deepcopy(train_df)))
+    validate_data(train_data)
 
-    target_column = infer_target_column(train_data, target)
+    if len(train_data) < 5:
+        raise ValueError('Training dataset must contain at least 5 valid rows after cleaning')
+
+    target_column = target or 'Capacitance'
+    target_column = infer_target_column(train_data, target_column)
+    if target_column != 'Capacitance' and 'Capacitance' in train_data.columns:
+        target_column = 'Capacitance'
+
     if target_column not in train_data.columns:
         raise ValueError(f'Target column "{target_column}" not found in training dataset')
 
-    feature_columns, rejected_features = resolve_feature_columns(train_data, test_data, target_column, predictors)
-    if target_column in feature_columns:
-        feature_columns.remove(target_column)
+    if split_mode == 'internal' or test_df is None:
+        inference_df = None
+    else:
+        inference_df = ensure_capacitance_target(clean_dataset(deepcopy(test_df)))
+        validate_data(inference_df)
 
-    train_features = train_data[feature_columns].apply(pd.to_numeric, errors='coerce')
-    test_features = test_data[feature_columns].apply(pd.to_numeric, errors='coerce')
+    feature_columns, rejected_features = resolve_feature_columns(train_data, inference_df, target_column, predictors)
 
-    train_target = pd.to_numeric(train_data[target_column], errors='coerce')
-    valid_train_mask = train_target.notna()
-    if int(valid_train_mask.sum()) < 5:
-        raise ValueError('Training dataset must contain at least 5 valid target rows after cleaning')
+    dataset_for_split = train_data[feature_columns + [target_column]].copy()
+    dataset_for_split = dataset_for_split.apply(pd.to_numeric, errors='coerce').dropna().reset_index(drop=True)
 
-    train_features = train_features.loc[valid_train_mask]
-    train_target = train_target.loc[valid_train_mask]
+    if len(dataset_for_split) < 5:
+        raise ValueError('Training dataset must contain at least 5 usable numeric rows after preprocessing')
+
+    x = dataset_for_split[feature_columns]
+    y = dataset_for_split[target_column]
+
+    print('Target stats:')
+    print(y.describe())
+    print('X sample:', x.head())
+    print('y sample:', y.head())
+    print('y unique:', y.nunique())
+
+    if y.nunique() < 2:
+        raise ValueError('Target variable has low variance; cannot train reliable models')
+
+    x_train_df, x_eval_df, y_train_series, y_eval_series = train_test_split(
+        x,
+        y,
+        test_size=0.2,
+        random_state=42,
+    )
 
     imputer = SimpleImputer(strategy='median')
-    x_train = imputer.fit_transform(train_features)
-    x_test = imputer.transform(test_features)
+    x_train = imputer.fit_transform(x_train_df)
+    x_eval = imputer.transform(x_eval_df)
 
     scaler = None
     if scale_features:
         scaler = StandardScaler()
         x_train = scaler.fit_transform(x_train)
-        x_test = scaler.transform(x_test)
+        x_eval = scaler.transform(x_eval)
 
-    y_test = None
-    test_has_target = False
-    if target_column in test_data.columns:
-        y_test_series = pd.to_numeric(test_data[target_column], errors='coerce')
-        if int(y_test_series.notna().sum()) > 0:
-            y_test = y_test_series.to_numpy(dtype=float)
-            test_has_target = True
+    inference_x = None
+    if inference_df is not None and len(inference_df) > 0:
+        inference_features = inference_df[feature_columns].apply(pd.to_numeric, errors='coerce')
+        inference_features = inference_features.fillna(inference_features.median(numeric_only=True))
+        inference_x = imputer.transform(inference_features)
+        if scale_features and scaler is not None:
+            inference_x = scaler.transform(inference_x)
 
     return {
         'x_train': x_train,
-        'x_test': x_test,
-        'y_train': train_target.to_numpy(dtype=float),
-        'y_test': y_test,
+        'x_test': x_eval,
+        'x_inference': inference_x,
+        'y_train': y_train_series.to_numpy(dtype=float),
+        'y_test': y_eval_series.to_numpy(dtype=float),
         'feature_columns': feature_columns,
         'target_column': target_column,
-        'test_has_target': test_has_target,
+        'test_has_target': True,
         'rejected_features': rejected_features,
-        'train_samples': int(len(train_target)),
-        'test_samples': int(len(test_data))
+        'train_samples': int(len(y_train_series)),
+        'test_samples': int(len(y_eval_series)),
+        'inference_samples': int(len(inference_df)) if inference_df is not None else 0,
+        'split_mode': 'internal' if inference_df is None else 'train_plus_inference'
     }
 
 
@@ -277,7 +376,7 @@ def build_plots(model_name, y_true, y_pred):
     return plots
 
 
-def finalize_model_result(model_name, prepared, predictions):
+def finalize_model_result(model_name, prepared, predictions, inference_predictions=None):
     y_pred = sanitize_predictions(predictions)
     aligned_true, aligned_pred = align_truth_and_predictions(prepared['y_test'], y_pred)
     metrics = build_metrics(
@@ -294,7 +393,7 @@ def finalize_model_result(model_name, prepared, predictions):
         actual_list = [float(value) for value in aligned_true]
         errors = [float(pred - actual) for actual, pred in zip(aligned_true, aligned_pred)]
 
-    return {
+    result = {
         'success': True,
         'model': model_name,
         'error': None,
@@ -309,6 +408,14 @@ def finalize_model_result(model_name, prepared, predictions):
             'feature_columns': prepared['feature_columns'],
             'target_column': prepared['target_column'],
             'test_has_target': prepared['test_has_target'],
-            'rejected_features': prepared['rejected_features']
+            'rejected_features': prepared['rejected_features'],
+            'split_mode': prepared.get('split_mode', 'internal')
         }
     }
+
+    if inference_predictions is not None:
+        result['inference'] = {
+            'predicted': [float(value) for value in sanitize_predictions(inference_predictions)]
+        }
+
+    return result

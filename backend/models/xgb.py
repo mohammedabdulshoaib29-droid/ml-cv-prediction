@@ -17,8 +17,9 @@ def run_xgb(train_df, test_df, predictors=None, target=None):
             train_df=train_df,
             test_df=test_df,
             predictors=predictors,
-            target=target,
-            scale_features=False
+            target='Capacitance',
+            scale_features=False,
+            split_mode='train_plus_inference' if test_df is not None else 'internal'
         )
 
         model = XGBRegressor(
@@ -32,8 +33,9 @@ def run_xgb(train_df, test_df, predictors=None, target=None):
         )
         model.fit(prepared['x_train'], prepared['y_train'])
         predictions = model.predict(prepared['x_test'])
+        inference_predictions = model.predict(prepared['x_inference']) if prepared.get('x_inference') is not None else None
 
-        result = finalize_model_result(model_name, prepared, predictions)
+        result = finalize_model_result(model_name, prepared, predictions, inference_predictions)
         if hasattr(model, 'feature_importances_'):
             result['feature_importance'] = {
                 column: float(importance)

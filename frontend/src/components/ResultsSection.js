@@ -1,127 +1,320 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
-  Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
-  Scatter,
-  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import '../styles/ResultsSection.css';
 
 const MODEL_ORDER = ['ANN', 'RandomForest', 'XGBoost'];
+
 const MODEL_LABELS = {
   ANN: 'ANN',
   RandomForest: 'Random Forest',
   XGBoost: 'XGBoost',
 };
+
 const MODEL_COLORS = {
   ANN: '#4f46e5',
   RandomForest: '#0f766e',
   XGBoost: '#ea580c',
 };
 
-const formatMetric = (value, digits = 4) => {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) {
-    return '-';
-  }
-  return Number(value).toFixed(digits);
+const MODEL_ALIASES = {
+  ANN: ['ANN', 'ann'],
+  RandomForest: ['RandomForest', 'Random Forest', 'randomforest', 'random_forest', 'RF'],
+  XGBoost: ['XGBoost', 'xgboost', 'xgb', 'XGBoostRegressor'],
 };
 
-function MetricCard({ label, value, unit }) {
+const isValidNumber = (value) => typeof value === 'number' && Number.isFinite(value);
+
+const toNumber = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const firstDefined = (...values) => {
+  for (const value of values) {
+    if (value !== null && value !== undefined && value !== '') {
+      return value;
+    }
+  }
+  return null;
+};
+
+const getModelEntry = (source, modelKey) => {
+  if (!source || typeof source !== 'object') {
+    return null;
+  }
+
+  const aliases = MODEL_ALIASES[modelKey] || [modelKey];
+  for (const alias of aliases) {
+    if (Object.prototype.hasOwnProperty.call(source, alias)) {
+      return source[alias];
+    }
+  }
+
+  return null;
+};
+
+const findComparisonEntry = (comparison, modelKey) => {
+  if (!Array.isArray(comparison)) {
+    return null;
+  }
+
+  const aliases = MODEL_ALIASES[modelKey] || [modelKey];
   return (
-    <div className="metric-chip">
+    comparison.find((item) => {
+      const modelName = item?.model || item?.name || item?.Model;
+      return aliases.includes(modelName);
+    }) || null
+  );
+};
+
+const formatMetric = (value, digits = 3) => {
+  const numeric = toNumber(value);
+  return isValidNumber(numeric) ? numeric.toFixed(digits) : '—';
+};
+
+const formatCapacitance = (value) => {
+  const numeric = toNumber(value);
+  return isValidNumber(numeric) ? `${numeric.toFixed(2)} F/g` : '—';
+};
+
+const formatConcentration = (value) => {
+  const numeric = toNumber(value);
+  return isValidNumber(numeric) ? `${numeric.toFixed(3)} M` : '—';
+};
+
+const normalizeGraphPoints = (graphData) => {
+  if (!graphData) {
+    return [];
+  }
+
+  if (Array.isArray(graphData)) {
+    return graphData
+      .map((point, index) => {
+        const concentration = toNumber(
+          firstDefined(point?.concentration, point?.x, point?.feature, point?.index, index + 1)
+        );
+        const capacitance = toNumber(
+          firstDefined(point?.predicted, point?.capacitance, point?.y, point?.value)
+        );
+
+        if (!isValidNumber(concentration) || !isValidNumber(capacitance)) {
+          return null;
+        }
+
+        return { concentration, capacitance };
+      })
+      .filter(Boolean);
+  }
+
+  if (Array.isArray(graphData?.capacitance_series)) {
+    return normalizeGraphPoints(graphData.capacitance_series);
+  }
+
+  const concentrations = Array.isArray(graphData?.concentration)
+    ? graphData.concentration
+    : Array.isArray(graphData?.concentrations)
+    ? graphData.concentrations
+    : Array.isArray(graphData?.x)
+    ? graphData.x
+    : null;
+
+  const predicted = Array.isArray(graphData?.predicted)
+    ? graphData.predicted
+    : Array.isArray(graphData?.capacitance)
+    ? graphData.capacitance
+    : Array.isArray(graphData?.y)
+    ? graphData.y
+    : null;
+
+  if (concentrations && predicted) {
+    return concentrations
+      .map((concentrationValue, index) => {
+        const concentration = toNumber(concentrationValue);
+        const capacitance = toNumber(predicted[index]);
+
+        if (!isValidNumber(concentration) || !isValidNumber(capacitance)) {
+          return null;
+        }
+
+        return { concentration, capacitance };
+      })
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
+const getPredictionRows = (results) => {
+  if (Array.isArray(results?.table)) {
+    return results.table;
+  }
+
+  if (Array.isArray(results?.prediction_table)) {
+    return results.prediction_table;
+  }
+
+  return [];
+};
+
+const getMetadata = (results) => results?.metadata || {};
+
+const getBestModelName = (bestModelValue) => {
+  if (!bestModelValue) {
+    return null;
+  }
+
+  if (typeof bestModelValue === 'string') {
+    return bestModelValue;
+  }
+
+  if (typeof bestModelValue === 'object') {
+    return firstDefined(bestModelValue.name, bestModelValue.model, bestModelValue.label);
+  }
+
+  return null;
+};
+
+const buildModelSummary = (results, modelKey) => {
+  const performance = getModelEntry(results?.performance, modelKey) || {};
+  const modelResult = getModelEntry(results?.models, modelKey) || {};
+  const comparisonEntry = findComparisonEntry(results?.comparison, modelKey) || {};
+  const graphEntry =
+    getModelEntry(results?.graphs, modelKey) ||
+    modelResult?.plots?.capacitance_series ||
+    modelResult?.plots?.concentration_curve ||
+    modelResult?.graph ||
+    comparisonEntry?.graph ||
+    null;
+
+  const metrics = modelResult?.metrics || {};
+  const chartData = normalizeGraphPoints(graphEntry);
+
+  const r2 = toNumber(
+    firstDefined(
+      performance?.r2,
+      performance?.r2_score,
+      metrics?.r2,
+      metrics?.r2_score,
+      modelResult?.r2,
+      comparisonEntry?.r2,
+      comparisonEntry?.r2_score
+    )
+  );
+
+  const rmse = toNumber(
+    firstDefined(
+      performance?.rmse,
+      metrics?.rmse,
+      modelResult?.rmse,
+      comparisonEntry?.rmse,
+      comparisonEntry?.RMSE
+    )
+  );
+
+  const capacitance = toNumber(
+    firstDefined(
+      performance?.capacitance,
+      performance?.predicted_capacitance,
+      metrics?.predicted_capacitance_max,
+      metrics?.predicted_capacitance_mean,
+      modelResult?.capacitance,
+      comparisonEntry?.capacitance,
+      comparisonEntry?.predicted_capacitance
+    )
+  );
+
+  const bestConcentration = toNumber(
+    firstDefined(
+      performance?.best_concentration,
+      performance?.concentration,
+      modelResult?.best_concentration,
+      comparisonEntry?.best_concentration,
+      comparisonEntry?.concentration
+    )
+  );
+
+  const explicitError = firstDefined(
+    performance?.error,
+    modelResult?.error,
+    modelResult?.message,
+    modelResult?.success === false ? 'Model training failed.' : null
+  );
+
+  const hasData =
+    isValidNumber(r2) ||
+    isValidNumber(rmse) ||
+    isValidNumber(capacitance) ||
+    isValidNumber(bestConcentration) ||
+    chartData.length > 0;
+
+  const status = explicitError ? 'failed' : hasData ? 'success' : 'failed';
+
+  return {
+    key: modelKey,
+    label: MODEL_LABELS[modelKey],
+    color: MODEL_COLORS[modelKey],
+    r2,
+    rmse,
+    capacitance,
+    bestConcentration,
+    chartData,
+    error: explicitError,
+    status,
+  };
+};
+
+function MetricChip({ label, value, empty = false }) {
+  return (
+    <div className={`metric-chip${empty ? ' metric-chip--empty' : ''}`}>
       <span>{label}</span>
-      <strong>
-        {value}
-        {unit ? ` ${unit}` : ''}
-      </strong>
-    </div>
-  );
-}
-
-function ModelPerformanceCard({ modelKey, modelData, isActive, onActivate }) {
-  const metrics = modelData?.metrics || {};
-  const successful = modelData?.success;
-
-  return (
-    <button
-      type="button"
-      className={`model-card ${isActive ? 'model-card-active' : ''}`}
-      onClick={() => onActivate(modelKey)}
-    >
-      <div className="model-card-header">
-        <div>
-          <p className="model-name">{MODEL_LABELS[modelKey]}</p>
-          <span className={`status-dot ${successful ? 'status-dot-success' : 'status-dot-error'}`}>
-            {successful ? 'Evaluated' : 'Failed'}
-          </span>
-        </div>
-        <div className="model-color-indicator" style={{ backgroundColor: MODEL_COLORS[modelKey] }} />
-      </div>
-
-      <div className="model-card-grid">
-        <MetricCard label="R²" value={formatMetric(metrics.r2_score)} />
-        <MetricCard label="RMSE" value={formatMetric(metrics.rmse)} />
-        <MetricCard label="Predicted Mean" value={formatMetric(metrics.predicted_capacitance_mean, 2)} unit="F/g" />
-      </div>
-    </button>
-  );
-}
-
-function PlotBlock({ title, description, image, children }) {
-  return (
-    <div className="chart-card">
-      <div className="card-heading">
-        <h3>{title}</h3>
-        <p>{description}</p>
-      </div>
-
-      {image ? (
-        <div className="plot-image-wrap">
-          <img src={`data:image/png;base64,${image}`} alt={title} className="plot-image" />
-        </div>
-      ) : (
-        children
-      )}
+      <strong>{value}</strong>
     </div>
   );
 }
 
 function ResultsSection({ results, hasResults }) {
-  const [activeModel, setActiveModel] = useState('ANN');
+  const metadata = getMetadata(results);
 
-  const availableModels = useMemo(() => {
-    if (!results?.models) {
-      return [];
-    }
+  const modelSummaries = useMemo(
+    () => MODEL_ORDER.map((modelKey) => buildModelSummary(results, modelKey)),
+    [results]
+  );
 
-    return MODEL_ORDER.filter((key) => results.models[key]?.success);
-  }, [results]);
+  const bestModelRaw = firstDefined(results?.best_model, results?.bestModel);
+  const bestModelName = getBestModelName(bestModelRaw);
+  const bestModel = modelSummaries.find((item) =>
+    (MODEL_ALIASES[item.key] || [item.key]).includes(bestModelName)
+  );
 
-  useEffect(() => {
-    if (availableModels.length && !availableModels.includes(activeModel)) {
-      setActiveModel(availableModels[0]);
-    }
-  }, [activeModel, availableModels]);
-
-  const currentModelKey = availableModels.includes(activeModel) ? activeModel : availableModels[0];
-  const currentModel = currentModelKey ? results?.models?.[currentModelKey] : null;
-  const comparisonData = results?.comparison || [];
-  const predictionTable = results?.prediction_table || [];
-  const metadata = results?.metadata || {};
-  const modelErrors = results?.model_errors || [];
-
-  const actualVsPredicted = currentModel?.plots?.actual_vs_predicted || [];
-  const errorDistribution = (currentModel?.plots?.error_distribution || []).map((item, index) => ({
-    index: index + 1,
-    ...item,
-  }));
-  const plotImages = currentModel?.plots?.images || {};
+  const bestCapacitance = toNumber(
+    firstDefined(results?.capacitance, bestModelRaw?.capacitance, bestModel?.capacitance)
+  );
+  const bestConcentration = toNumber(
+    firstDefined(
+      results?.best_concentration,
+      bestModelRaw?.best_concentration,
+      bestModel?.bestConcentration
+    )
+  );
+  const bestDopant = firstDefined(
+    results?.best_dopant,
+    bestModelRaw?.dopant,
+    results?.dopant,
+    'Not specified'
+  );
+  const predictionRows = getPredictionRows(results);
 
   if (!hasResults) {
     return (
@@ -158,15 +351,15 @@ function ResultsSection({ results, hasResults }) {
       <div className="metadata-bar">
         <div className="metadata-item">
           <span>Training dataset</span>
-          <strong>{metadata.selected_train_dataset || '-'}</strong>
+          <strong>{metadata.selected_train_dataset || '—'}</strong>
         </div>
         <div className="metadata-item">
           <span>Testing dataset</span>
-          <strong>{metadata.uploaded_test_filename || '-'}</strong>
+          <strong>{metadata.uploaded_test_filename || '—'}</strong>
         </div>
         <div className="metadata-item">
           <span>Target column</span>
-          <strong>{metadata.target_column || '-'}</strong>
+          <strong>{metadata.target_column || '—'}</strong>
         </div>
         <div className="metadata-item">
           <span>Features used</span>
@@ -174,148 +367,174 @@ function ResultsSection({ results, hasResults }) {
         </div>
       </div>
 
-      {!!modelErrors.length && (
-        <div className="empty-state">
-          {modelErrors.map((item) => (
-            <p key={item.model}>
-              <strong>{item.model}:</strong> {item.error}
-            </p>
-          ))}
+      <div className="dashboard-best-highlight">
+        <span className="best-highlight__badge">Top Recommendation</span>
+        <h3 className="best-highlight__title">
+          {bestModel?.label || bestModelName || 'Best model pending'}
+        </h3>
+        <div className="best-highlight__metrics">
+          <div className="best-highlight__metric">
+            <span>Best capacitance</span>
+            <strong>{formatCapacitance(bestCapacitance)}</strong>
+          </div>
+          <div className="best-highlight__metric">
+            <span>Best concentration</span>
+            <strong>{formatConcentration(bestConcentration)}</strong>
+          </div>
+          <div className="best-highlight__metric">
+            <span>Recommended dopant</span>
+            <strong>{bestDopant || '—'}</strong>
+          </div>
         </div>
-      )}
-
-      <div className="model-cards-grid">
-        {MODEL_ORDER.map((modelKey) => (
-          <ModelPerformanceCard
-            key={modelKey}
-            modelKey={modelKey}
-            modelData={results?.models?.[modelKey]}
-            isActive={currentModelKey === modelKey}
-            onActivate={setActiveModel}
-          />
-        ))}
       </div>
 
-      {currentModel && (
-        <>
-          <div className="chart-card">
-            <div className="card-heading">
-              <h3>{MODEL_LABELS[currentModelKey]} detailed metrics</h3>
-              <p>Model performance and predicted capacitance range.</p>
-            </div>
+      <div className="model-dashboard-grid">
+        {modelSummaries.map((model) => {
+          const isBest = bestModel?.key === model.key;
+          const stateClass =
+            model.status === 'success' ? 'model-result-card--success' : 'model-result-card--failed';
 
-            <div className="model-card-grid">
-              <MetricCard label="R² Score" value={formatMetric(currentModel.metrics?.r2_score)} />
-              <MetricCard label="RMSE" value={formatMetric(currentModel.metrics?.rmse)} />
-              <MetricCard label="MAE" value={formatMetric(currentModel.metrics?.mae)} />
-              <MetricCard
-                label="Predicted Mean"
-                value={formatMetric(currentModel.metrics?.predicted_capacitance_mean, 2)}
-                unit="F/g"
-              />
-              <MetricCard
-                label="Predicted Min"
-                value={formatMetric(currentModel.metrics?.predicted_capacitance_min, 2)}
-                unit="F/g"
-              />
-              <MetricCard
-                label="Predicted Max"
-                value={formatMetric(currentModel.metrics?.predicted_capacitance_max, 2)}
-                unit="F/g"
-              />
-              <MetricCard label="Training Samples" value={currentModel.metrics?.train_samples ?? '-'} />
-              <MetricCard label="Testing Samples" value={currentModel.metrics?.test_samples ?? '-'} />
-            </div>
-          </div>
-
-          <div className="charts-grid">
-            <div className="chart-card">
-              <div className="card-heading">
-                <h3>Model comparison bar chart</h3>
-                <p>Higher R² and lower RMSE indicate better generalization.</p>
+          return (
+            <div
+              key={model.key}
+              className={`model-result-card ${stateClass}${isBest ? ' model-result-card--active' : ''}`}
+            >
+              <div className="model-result-card__header">
+                <div>
+                  <h3 className="model-result-card__title">{model.label}</h3>
+                </div>
+                <div className="model-result-card__status">
+                  <span className="status-badge">
+                    {model.status === 'success' ? 'Completed' : 'Failed'}
+                  </span>
+                </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={comparisonData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="model" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="r2_score" name="R²">
-                    {comparisonData.map((entry) => (
-                      <Cell key={`${entry.model}-r2`} fill={MODEL_COLORS[entry.model] || '#4f46e5'} />
-                    ))}
-                  </Bar>
-                  <Bar dataKey="rmse" name="RMSE" fill="#f59e0b" />
-                </BarChart>
-              </ResponsiveContainer>
+
+              <div className="model-result-card__metrics">
+                <MetricChip label="R²" value={formatMetric(model.r2)} empty={!isValidNumber(model.r2)} />
+                <MetricChip label="RMSE" value={formatMetric(model.rmse)} empty={!isValidNumber(model.rmse)} />
+                <MetricChip
+                  label="Capacitance"
+                  value={formatCapacitance(model.capacitance)}
+                  empty={!isValidNumber(model.capacitance)}
+                />
+                <MetricChip
+                  label="Best concentration"
+                  value={formatConcentration(model.bestConcentration)}
+                  empty={!isValidNumber(model.bestConcentration)}
+                />
+              </div>
+
+              {model.status === 'failed' ? (
+                <div className="model-failure">
+                  <p>{model.error || 'This model did not return valid dashboard metrics.'}</p>
+                </div>
+              ) : model.chartData.length ? (
+                <div className="inline-chart-wrap">
+                  <ResponsiveContainer width="100%" height={180}>
+                    <LineChart data={model.chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis
+                        dataKey="concentration"
+                        tickFormatter={(value) => {
+                          const numeric = toNumber(value);
+                          return isValidNumber(numeric) ? numeric.toFixed(2) : value;
+                        }}
+                      />
+                      <YAxis
+                        tickFormatter={(value) => {
+                          const numeric = toNumber(value);
+                          return isValidNumber(numeric) ? numeric.toFixed(0) : value;
+                        }}
+                      />
+                      <Tooltip
+                        formatter={(value) => [formatCapacitance(value), 'Capacitance']}
+                        labelFormatter={(label) => `Concentration: ${formatConcentration(label)}`}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="capacitance"
+                        stroke={model.color}
+                        strokeWidth={2.5}
+                        dot={false}
+                        activeDot={{ r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="model-failure">
+                  <p>No concentration-capacitance curve available for this model.</p>
+                </div>
+              )}
             </div>
+          );
+        })}
+      </div>
 
-            <PlotBlock
-              title="Actual vs Predicted values"
-              description={`Parity view for ${MODEL_LABELS[currentModelKey]}.`}
-              image={plotImages.actual_vs_predicted}
-            >
-              <ResponsiveContainer width="100%" height={300}>
-                <ScatterChart>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="actual" name="Actual" />
-                  <YAxis dataKey="predicted" name="Predicted" />
-                  <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                  <Scatter data={actualVsPredicted} fill={MODEL_COLORS[currentModelKey]} />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </PlotBlock>
-
-            <PlotBlock
-              title="Error distribution"
-              description="Residual spread for the selected model."
-              image={plotImages.error_distribution}
-            >
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={errorDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="index" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="error" fill={MODEL_COLORS[currentModelKey]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </PlotBlock>
-          </div>
-        </>
-      )}
-
-      <div className="prediction-table-card">
+      <div className="comparison-table-card">
         <div className="card-heading">
-          <h3>Predicted capacitance table</h3>
-          <p>Actual values and per-model predictions returned from backend evaluation.</p>
+          <h3>Performance comparison</h3>
+          <p>Side-by-side dashboard metrics for all evaluated models.</p>
         </div>
-
-        {predictionTable.length ? (
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  {Object.keys(predictionTable[0]).map((column) => (
-                    <th key={column}>{column}</th>
-                  ))}
+        <div className="dashboard-table-wrap">
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>R²</th>
+                <th>RMSE</th>
+                <th>Capacitance F/g</th>
+                <th>Best concentration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modelSummaries.map((model) => (
+                <tr key={model.key}>
+                  <td>{model.label}</td>
+                  <td>{formatMetric(model.r2)}</td>
+                  <td>{formatMetric(model.rmse)}</td>
+                  <td>{formatCapacitance(model.capacitance)}</td>
+                  <td>{formatConcentration(model.bestConcentration)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {predictionTable.slice(0, 50).map((row, index) => (
-                  <tr key={`prediction-row-${index}`}>
-                    {Object.keys(predictionTable[0]).map((column) => (
-                      <td key={`${index}-${column}`}>{String(row[column] ?? '')}</td>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="charts-grid">
+        <div className="chart-card">
+          <div className="card-heading">
+            <h3>Predicted capacitance table</h3>
+            <p>Prediction outputs returned from backend evaluation.</p>
+          </div>
+
+          {predictionRows.length ? (
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    {Object.keys(predictionRows[0]).map((column) => (
+                      <th key={column}>{column.replace(/_/g, ' ')}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="empty-state">No prediction rows were returned.</p>
-        )}
+                </thead>
+                <tbody>
+                  {predictionRows.slice(0, 50).map((row, index) => (
+                    <tr key={`prediction-row-${index}`}>
+                      {Object.keys(predictionRows[0]).map((column) => (
+                        <td key={`${index}-${column}`}>{row[column] ?? '—'}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="empty-state">No prediction rows were returned.</p>
+          )}
+        </div>
       </div>
     </div>
   );

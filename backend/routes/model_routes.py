@@ -55,12 +55,68 @@ def _extract_predictors():
         return None
 
 
-@model_bp.route('/predict', methods=['POST'])
 @model_bp.route('/train', methods=['POST'])
+def train():
+    """
+    Train one or more models using a single stored dataset.
+    The dataset is internally split into train/test partitions.
+    Optional:
+    - dataset_name or train_dataset
+    - model_type: all | ann | rf | xgb
+    - predictors: optional JSON array of feature names
+    - target: ignored unless explicitly valid; pipeline prefers Capacitance
+    """
+    try:
+        dataset_name = request.form.get('dataset_name') or request.form.get('train_dataset')
+        if not dataset_name:
+            return jsonify({'success': False, 'error': 'Training dataset not specified'}), 400
+
+        train_df = _load_training_dataframe(dataset_name)
+        if train_df.empty:
+            return jsonify({'success': False, 'error': 'Training dataset is empty'}), 400
+
+        model_type = request.form.get('model_type', 'all')
+        predictors = _extract_predictors()
+        target = request.form.get('target') or 'Capacitance'
+
+        metadata = {
+            'selected_train_dataset': dataset_name,
+            'uploaded_test_filename': None,
+            'target_column': target,
+            'feature_columns': predictors or [],
+            'pipeline_mode': 'internal_split_training'
+        }
+
+        results = train_all_models(
+            train_df=train_df,
+            test_df=None,
+            predictors=predictors,
+            target=target,
+            model_type=model_type,
+            metadata=metadata
+        )
+
+        results['message'] = 'Training completed using internal train/test split'
+        status_code = 200 if results.get('success') else 400
+        return jsonify(results), status_code
+
+    except FileNotFoundError as e:
+        return jsonify({'success': False, 'error': str(e)}), 404
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        print(f"Error in train: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@model_bp.route('/predict', methods=['POST'])
 def predict():
     """
-    Run predictions using stored training dataset and uploaded testing dataset
-
+    Train models using the selected stored dataset and predict on an uploaded dataset.
+    Training metrics still come from an internal split of the training dataset.
     Expected form data:
     - dataset_name or train_dataset: Name of stored training dataset
     - test_file: Test dataset file (xlsx or csv)
@@ -90,13 +146,14 @@ def predict():
 
         model_type = request.form.get('model_type', 'all')
         predictors = _extract_predictors()
-        target = request.form.get('target')
+        target = request.form.get('target') or 'Capacitance'
 
         metadata = {
             'selected_train_dataset': dataset_name,
             'uploaded_test_filename': secure_filename(test_file.filename),
             'target_column': target,
-            'feature_columns': predictors or []
+            'feature_columns': predictors or [],
+            'pipeline_mode': 'train_split_plus_external_inference'
         }
 
         results = train_all_models(
@@ -108,6 +165,7 @@ def predict():
             metadata=metadata
         )
 
+        results['message'] = 'Prediction completed using internally trained models'
         status_code = 200 if results.get('success') else 400
         return jsonify(results), status_code
 
@@ -126,7 +184,7 @@ def predict():
 @model_bp.route('/compare', methods=['POST'])
 def compare_models():
     try:
-        response, status_code = predict()
+        response, status_code = train()
         return response, status_code
     except Exception as e:
         print(f"Error in compare_models: {traceback.format_exc()}")
