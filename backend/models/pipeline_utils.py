@@ -142,12 +142,12 @@ def infer_target_column(train_df, requested_target=None):
             series = pd.to_numeric(train_df[column], errors='coerce').dropna()
             if series.nunique() > 1:
                 return column
-+
-+    if 'Capacitance' in train_df.columns:
-+        return 'Capacitance'
- 
-     numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
-     if numeric_columns:
+
+    if 'Capacitance' in train_df.columns:
+        return 'Capacitance'
+
+    numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
+    if numeric_columns:
          return numeric_columns[-1]
 
     numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
