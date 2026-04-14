@@ -119,18 +119,79 @@ function WorkflowPage({
     },
   ];
 
+  const modelCards = [
+    {
+      title: 'ANN',
+      description: 'Good for learning nonlinear relationships in electrochemical and materials datasets.',
+    },
+    {
+      title: 'Random Forest',
+      description: 'Useful for stable tabular predictions and feature-driven comparisons.',
+    },
+    {
+      title: 'XGBoost',
+      description: 'Strong gradient-boosted baseline for high-quality regression performance.',
+    },
+  ];
+
+  const keyHighlights = [
+    'Single-page workflow for dataset upload, model training, and prediction.',
+    'Supports stored CV training datasets and separate test files for inference.',
+    'Compares ANN, Random Forest, and XGBoost in one application.',
+    'Surfaces latest metrics, model comparison, and prediction outputs in one place.',
+  ];
+
+  const metricsInfo = [
+    { label: 'Target output', value: 'Capacitance prediction' },
+    { label: 'Supported files', value: 'CV `.csv` and `.xlsx` datasets' },
+    { label: 'Training mode', value: 'Internal train/test split' },
+    { label: 'Prediction mode', value: 'Stored train data + uploaded test file' },
+  ];
+
   return (
     <div className="page-layout workflow-page">
       <PageHeader
-        eyebrow="Guided Workflow"
-        title="Upload data, train models, and predict results on one simple page"
-        description="Follow these four steps from top to bottom. First choose your training dataset, then train a model, upload a test file for prediction, and review the latest results below."
+        eyebrow="ML Prediction Workspace"
+        title="Train capacitance models and run predictions from one guided page"
+        description="This workspace is designed for your capacitor materials ML workflow. Upload or select cyclic voltammetry (CV) training data, compare ANN, Random Forest, and XGBoost, then run predictions on a separate test dataset and review the results immediately."
       />
 
       <div className="workflow-hero-grid">
         <SectionCard
+          title="Platform overview"
+          subtitle="A clearer introduction to what this website does and how to use it."
+        >
+          <div className="workflow-overview">
+            <div className="workflow-overview__intro">
+              <h3>What this system does</h3>
+              <p>
+                This application predicts capacitance-related outcomes from uploaded cyclic
+                voltammetry (CV) and related tabular datasets. It is built for an easy
+                end-to-end workflow: dataset selection, model training, inference on test data,
+                and result review.
+              </p>
+            </div>
+
+            <div className="workflow-overview__grid">
+              <div className="workflow-overview__card">
+                <h4>Core models</h4>
+                <p>ANN, Random Forest, and XGBoost are available for training and comparison.</p>
+              </div>
+              <div className="workflow-overview__card">
+                <h4>Main inputs</h4>
+                <p>CV training datasets and test datasets in `.csv` or `.xlsx` format.</p>
+              </div>
+              <div className="workflow-overview__card">
+                <h4>Main output</h4>
+                <p>Predicted capacitance values, model comparison metrics, and best-model summary.</p>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard
           title="Quick summary"
-          subtitle="A simple snapshot of where your workflow stands right now."
+          subtitle="A snapshot of the current workflow state."
         >
           <div className="workflow-summary">
             <div className="workflow-summary__grid">
@@ -145,15 +206,56 @@ function WorkflowPage({
         </SectionCard>
       </div>
 
+      <div className="workflow-info-grid">
+        <SectionCard
+          title="Workflow highlights"
+          subtitle="Why this interface is structured this way."
+        >
+          <ul className="workflow-bullet-list">
+            {keyHighlights.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </SectionCard>
+
+        <SectionCard
+          title="Model architecture in this website"
+          subtitle="A simple explanation of the prediction stack used here."
+        >
+          <div className="workflow-model-grid">
+            {modelCards.map((model) => (
+              <article key={model.title} className="workflow-model-card">
+                <h4>{model.title}</h4>
+                <p>{model.description}</p>
+              </article>
+            ))}
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Inputs, outputs, and training setup"
+          subtitle="Information that helps users understand what to prepare."
+        >
+          <div className="workflow-metrics-grid">
+            {metricsInfo.map((item) => (
+              <div key={item.label} className="workflow-metric-item">
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      </div>
+
       <div className="workflow-step-grid">
         <SectionCard
-          title="Step 1: Choose your training dataset"
+          title="Step 1: Choose your CV training dataset"
           subtitle="Upload a new file or select one you already stored."
         >
           <p className="workflow-step-label">Step 1</p>
           <p className="supporting-text">
-            Start by picking the dataset you want to use for model training. This becomes the main
-            dataset for the rest of the workflow.
+            Start by picking the cyclic voltammetry dataset you want to use for model training.
+            This becomes the main dataset for the rest of the workflow.
           </p>
           <DatasetManager
             selectedDataset={selectedDataset}
