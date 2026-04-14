@@ -129,12 +129,26 @@ def infer_target_column(train_df, requested_target=None):
     if requested_target and requested_target in train_df.columns:
         return requested_target
 
+    capacitance_is_usable = False
     if 'Capacitance' in train_df.columns:
+        capacitance_series = pd.to_numeric(train_df['Capacitance'], errors='coerce').dropna()
+        capacitance_is_usable = capacitance_series.nunique() > 1
+
+    if capacitance_is_usable:
         return 'Capacitance'
 
     for column in TARGET_CANDIDATES:
         if column in train_df.columns:
-            return column
+            series = pd.to_numeric(train_df[column], errors='coerce').dropna()
+            if series.nunique() > 1:
+                return column
++
++    if 'Capacitance' in train_df.columns:
++        return 'Capacitance'
+ 
+     numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
+     if numeric_columns:
+         return numeric_columns[-1]
 
     numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
     if numeric_columns:
@@ -198,8 +212,6 @@ def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale
 
     target_column = target or 'Capacitance'
     target_column = infer_target_column(train_data, target_column)
-    if target_column != 'Capacitance' and 'Capacitance' in train_data.columns:
-        target_column = 'Capacitance'
 
     if target_column not in train_data.columns:
         raise ValueError(f'Target column "{target_column}" not found in training dataset')

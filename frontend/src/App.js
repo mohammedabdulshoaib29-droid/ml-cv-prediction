@@ -3,6 +3,9 @@ import AppShell from './components/app/AppShell';
 import WorkflowPage from './pages/WorkflowPage';
 import DashboardPage from './pages/DashboardPage';
 import PerformanceAnalyticsPage from './pages/PerformanceAnalyticsPage';
+import './styles/professional-theme.css';
+import './styles/dashboard-layout.css';
+import './styles/components.css';
 import './styles/app-shell.css';
 
 const ROUTES = {
