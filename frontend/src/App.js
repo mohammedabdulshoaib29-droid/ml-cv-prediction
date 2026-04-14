@@ -6,6 +6,7 @@ import PerformanceAnalyticsPage from './pages/PerformanceAnalyticsPage';
 import './styles/professional-theme.css';
 import './styles/dashboard-layout.css';
 import './styles/components.css';
+import './styles/utilities.css';
 import './styles/app-shell.css';
 
 const ROUTES = {
