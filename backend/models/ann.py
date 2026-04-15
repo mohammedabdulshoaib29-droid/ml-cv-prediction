@@ -139,7 +139,10 @@ def run_ann(train_df, test_df, predictors=None, target=None):
         inference_predictions = model.predict(prepared['x_inference']) if prepared.get('x_inference') is not None else None
 
         result = finalize_model_result(model_name, prepared, predictions, inference_predictions)
-        result.update(_build_cv_optimization_result(model, prepared, train_df))
+        metrics = result.get("metrics", {})
+        result["capacitance"] = float(metrics.get("predicted_capacitance_max", 0.0))
+        result["best_concentration"] = None
+        result["best_dopant"] = None
         return result
 
     except Exception as e:

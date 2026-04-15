@@ -144,7 +144,10 @@ def run_xgb(train_df, test_df, predictors=None, target=None):
                 column: float(importance)
                 for column, importance in zip(prepared['feature_columns'], model.feature_importances_)
             }
-        result.update(_build_cv_optimization_result(model, prepared, train_df))
+        metrics = result.get("metrics", {})
+        result["capacitance"] = float(metrics.get("predicted_capacitance_max", 0.0))
+        result["best_concentration"] = None
+        result["best_dopant"] = None
         return result
 
     except Exception as e:

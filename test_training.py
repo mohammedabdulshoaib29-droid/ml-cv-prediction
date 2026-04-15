@@ -16,6 +16,9 @@ if result.get('success'):
     best = result.get('best_model', {})
     print(f'Best Model: {best.get("name")}')
     print(f'Capacitance: {best.get("capacitance")}')
+    print(f'Dashboard top card capacitance: {result.get("capacitance")}')
+    print(f'Performance ANN capacitance: {result.get("performance", {}).get("ANN", {}).get("capacitance")}')
+    print(f'Comparison ANN capacitance: {(result.get("comparison") or [{}])[0].get("capacitance") if result.get("comparison") else None}')
     
     print('\nModel Results:')
     for model_name, model_result in result.get('models', {}).items():

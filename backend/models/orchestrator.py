@@ -177,7 +177,25 @@ def _best_concentration_from_model(model_result):
     )
 
 
+def _dashboard_capacitance_from_model(model_result):
+    direct_candidates = [
+        model_result.get('capacitance'),
+        model_result.get('best_model_capacitance'),
+        model_result.get('best_capacitance'),
+    ]
+    for candidate in direct_candidates:
+        cleaned = _clean_metric(candidate)
+        if cleaned is not None:
+            return cleaned
+
+    return None
+
+
 def _best_capacitance_from_model(model_result):
+    dashboard_capacitance = _dashboard_capacitance_from_model(model_result)
+    if dashboard_capacitance is not None:
+        return dashboard_capacitance
+
     metrics = model_result.get('metrics', {})
     preferred = metrics.get('predicted_capacitance_max')
     cleaned_preferred = _clean_metric(preferred)
@@ -211,7 +229,7 @@ def _build_comparison(model_results):
             'predicted_capacitance_mean': _clean_metric(metrics.get('predicted_capacitance_mean')),
             'predicted_capacitance_min': _clean_metric(metrics.get('predicted_capacitance_min')),
             'predicted_capacitance_max': _clean_metric(metrics.get('predicted_capacitance_max')),
-            'capacitance': _best_capacitance_from_model(model_result),
+            'capacitance': _dashboard_capacitance_from_model(model_result),
             'best_concentration': _best_concentration_from_model(model_result),
         })
 
@@ -267,6 +285,7 @@ def train_all_models(train_df, test_df, predictors=None, target=None, model_type
 
         for model_name, model_result in results['models'].items():
             metrics = model_result.get('metrics', {})
+            dashboard_capacitance = _dashboard_capacitance_from_model(model_result)
             best_capacitance = _best_capacitance_from_model(model_result)
             best_concentration = _best_concentration_from_model(model_result)
 
@@ -274,7 +293,7 @@ def train_all_models(train_df, test_df, predictors=None, target=None, model_type
                 'status': 'Success' if model_result.get('success') else 'Failed',
                 'r2': _clean_metric(metrics.get('r2_score')) if model_result.get('success') else None,
                 'rmse': _clean_metric(metrics.get('rmse')) if model_result.get('success') else None,
-                'capacitance': best_capacitance if model_result.get('success') else None,
+                'capacitance': dashboard_capacitance if model_result.get('success') else None,
                 'best_concentration': best_concentration if model_result.get('success') else None,
                 'error': model_result.get('error'),
             }
