@@ -23,12 +23,12 @@ def run_rf(train_df, test_df, predictors=None, target=None):
         )
 
         model = RandomForestRegressor(
-            n_estimators=300,
-            max_depth=None,
-            min_samples_split=2,
-            min_samples_leaf=1,
+            n_estimators=120,
+            max_depth=16,
+            min_samples_split=4,
+            min_samples_leaf=2,
             random_state=42,
-            n_jobs=-1
+            n_jobs=1
         )
         model.fit(prepared['x_train'], prepared['y_train'])
         predictions = model.predict(prepared['x_test'])
