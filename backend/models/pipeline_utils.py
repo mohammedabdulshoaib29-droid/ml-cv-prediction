@@ -148,10 +148,6 @@ def infer_target_column(train_df, requested_target=None):
 
     numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
     if numeric_columns:
-         return numeric_columns[-1]
-
-    numeric_columns = [column for column in train_df.columns if pd.api.types.is_numeric_dtype(train_df[column])]
-    if numeric_columns:
         return numeric_columns[-1]
 
     if len(train_df.columns) > 0:
@@ -292,8 +288,8 @@ def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale
         'feature_columns': feature_columns,
         'target_column': target_column,
         'test_has_target': True,
-            'rejected_features': rejected_features,
-            'missing_inference_features': missing_inference_features,
+        'rejected_features': rejected_features,
+        'missing_inference_features': missing_inference_features,
         'train_samples': int(len(y_train_series)),
         'test_samples': int(len(y_eval_series)),
         'inference_samples': int(len(inference_df)) if inference_df is not None else 0,
