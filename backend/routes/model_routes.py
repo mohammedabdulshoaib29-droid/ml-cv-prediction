@@ -97,6 +97,12 @@ def train():
         )
 
         results['message'] = 'Training completed using internal train/test split'
+        if not results.get('success') and results.get('model_errors'):
+            results['error'] = 'All model runs failed: ' + '; '.join(
+                f"{item.get('model')}: {item.get('error')}"
+                for item in results.get('model_errors', [])
+                if item.get('error')
+            )
         status_code = 200 if results.get('success') else 400
         return jsonify(results), status_code
 
@@ -166,6 +172,12 @@ def predict():
         )
 
         results['message'] = 'Prediction completed using internally trained models'
+        if not results.get('success') and results.get('model_errors'):
+            results['error'] = 'All model runs failed: ' + '; '.join(
+                f"{item.get('model')}: {item.get('error')}"
+                for item in results.get('model_errors', [])
+                if item.get('error')
+            )
         status_code = 200 if results.get('success') else 400
         return jsonify(results), status_code
 
