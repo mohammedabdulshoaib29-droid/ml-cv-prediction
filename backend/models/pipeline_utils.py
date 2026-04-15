@@ -51,7 +51,7 @@ def calculate_capacitance(df):
     mass = 0.002
     scan_rate = float(scan_rate_series.mean()) if not scan_rate_series.empty else 0.0
     v = scan_rate / 1000 if scan_rate != 0 else 1e-6
-    area = float(np.trapz(np.abs(currents), voltages)) if usable_length > 1 else 0.0
+    area = float(np.trapezoid(np.abs(currents), voltages)) if usable_length > 1 else 0.0
 
     return area / (2 * mass * delta_v * v) if delta_v != 0 else 0.0
 
