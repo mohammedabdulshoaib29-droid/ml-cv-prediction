@@ -120,10 +120,15 @@ def ensure_capacitance_target(df):
             merge_columns = grouping_columns + ['Capacitance_computed']
             enriched = enriched.merge(grouped[merge_columns], on=grouping_columns, how='left')
 
-            existing_capacitance = pd.to_numeric(enriched.get('Capacitance'), errors='coerce')
+            existing_capacitance_raw = enriched.get('Capacitance')
+            existing_capacitance = (
+                pd.to_numeric(existing_capacitance_raw, errors='coerce')
+                if existing_capacitance_raw is not None
+                else None
+            )
             computed_capacitance = pd.to_numeric(enriched['Capacitance_computed'], errors='coerce')
 
-            if existing_capacitance is None:
+            if existing_capacitance is None or np.isscalar(existing_capacitance):
                 enriched['Capacitance'] = computed_capacitance
             else:
                 enriched['Capacitance'] = existing_capacitance.where(existing_capacitance.notna(), computed_capacitance)
