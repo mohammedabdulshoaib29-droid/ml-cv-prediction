@@ -119,7 +119,7 @@ def run_ann(train_df, test_df, predictors=None, target=None):
             train_df=train_df,
             test_df=test_df,
             predictors=predictors,
-            target='Current',
+            target='Capacitance',
             scale_features=True,
             split_mode='train_plus_inference' if test_df is not None else 'internal'
         )

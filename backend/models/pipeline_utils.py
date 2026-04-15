@@ -31,37 +31,54 @@ TARGET_CANDIDATES = [
 ]
 
 
-def calculate_capacitance(df):
+def calculate_capacitance(df, mass=0.002):
     required_columns = {'Potential', 'Current', 'SCAN_RATE'}
     if not required_columns.issubset(df.columns):
         return np.nan
 
-    voltages = pd.to_numeric(df['Potential'], errors='coerce').dropna().to_numpy(dtype=float)
-    currents = pd.to_numeric(df['Current'], errors='coerce').dropna().to_numpy(dtype=float)
-    scan_rate_series = pd.to_numeric(df['SCAN_RATE'], errors='coerce').dropna()
+    voltages = pd.to_numeric(df['Potential'], errors='coerce').to_numpy(dtype=float)
+    currents = pd.to_numeric(df['Current'], errors='coerce').to_numpy(dtype=float)
+    scan_rates = pd.to_numeric(df['SCAN_RATE'], errors='coerce').to_numpy(dtype=float)
 
-    if len(voltages) == 0 or len(currents) == 0 or scan_rate_series.empty:
+    valid_mask = np.isfinite(voltages) & np.isfinite(currents) & np.isfinite(scan_rates)
+    voltages = voltages[valid_mask]
+    currents = currents[valid_mask]
+    scan_rates = scan_rates[valid_mask]
+
+    if len(voltages) < 2:
         return np.nan
 
-    usable_length = min(len(voltages), len(currents))
-    voltages = voltages[:usable_length]
-    currents = currents[:usable_length]
+    sort_idx = np.argsort(voltages)
+    voltages = voltages[sort_idx]
+    currents = currents[sort_idx]
+    scan_rates = scan_rates[sort_idx]
 
-    delta_v = float(np.max(voltages) - np.min(voltages)) if usable_length else 0.0
-    mass = 0.002
-    scan_rate = float(scan_rate_series.mean()) if not scan_rate_series.empty else 0.0
-    v = scan_rate / 1000 if scan_rate != 0 else 1e-6
-    area = float(np.trapezoid(np.abs(currents), voltages)) if usable_length > 1 else 0.0
+    delta_v = float(np.max(voltages) - np.min(voltages))
+    if delta_v <= 0:
+        return np.nan
 
-    return area / (2 * mass * delta_v * v) if delta_v != 0 else 0.0
+    scan_rate = float(np.nanmedian(scan_rates))
+    if not np.isfinite(scan_rate) or scan_rate == 0:
+        return np.nan
+
+    v = scan_rate / 1000.0 if abs(scan_rate) > 1 else float(scan_rate)
+    if v == 0:
+        return np.nan
+
+    area = float(np.trapezoid(np.abs(currents), voltages))
+    capacitance = area / (2.0 * mass * delta_v * abs(v))
+    return float(capacitance) if np.isfinite(capacitance) else np.nan
 
 
 def validate_data(df):
     print('Shape:', df.shape)
     print('Missing values:\n', df.isnull().sum())
     for col in df.columns:
-        if df[col].nunique(dropna=True) < 2:
+        unique_count = df[col].nunique(dropna=True)
+        if unique_count < 2:
             print(f'⚠️ Column {col} has low variance')
+        if col in ('Current', 'Capacitance'):
+            print(f'{col} unique values: {unique_count}')
 
 
 def clean_dataset(df):
@@ -80,9 +97,40 @@ def clean_dataset(df):
 def ensure_capacitance_target(df):
     enriched = df.copy()
 
-    if 'Capacitance' not in enriched.columns and {'Potential', 'Current', 'SCAN_RATE'}.issubset(enriched.columns):
-        capacitance_value = calculate_capacitance(enriched)
-        enriched['Capacitance'] = capacitance_value
+    duplicate_capacitance_columns = [
+        column for column in enriched.columns
+        if column.startswith('Capacitance_')
+    ]
+    if duplicate_capacitance_columns:
+        enriched = enriched.drop(columns=duplicate_capacitance_columns)
+
+    if {'Potential', 'Current', 'SCAN_RATE'}.issubset(enriched.columns):
+        grouping_columns = [
+            column for column in ['ZN', 'CO', 'Zn/Co_Conc', 'SCAN_RATE']
+            if column in enriched.columns
+        ]
+
+        if grouping_columns:
+            grouped = (
+                enriched.groupby(grouping_columns, dropna=False, sort=False)
+                .apply(calculate_capacitance)
+                .reset_index(name='Capacitance_computed')
+            )
+
+            merge_columns = grouping_columns + ['Capacitance_computed']
+            enriched = enriched.merge(grouped[merge_columns], on=grouping_columns, how='left')
+
+            existing_capacitance = pd.to_numeric(enriched.get('Capacitance'), errors='coerce')
+            computed_capacitance = pd.to_numeric(enriched['Capacitance_computed'], errors='coerce')
+
+            if existing_capacitance is None:
+                enriched['Capacitance'] = computed_capacitance
+            else:
+                enriched['Capacitance'] = existing_capacitance.where(existing_capacitance.notna(), computed_capacitance)
+
+            enriched = enriched.drop(columns=['Capacitance_computed'], errors='ignore')
+        elif 'Capacitance' not in enriched.columns:
+            enriched['Capacitance'] = calculate_capacitance(enriched)
 
     return enriched
 
@@ -240,7 +288,12 @@ def prepare_datasets(train_df, test_df=None, predictors=None, target=None, scale
     print('y sample:', y.head())
     print('y unique:', y.nunique())
 
-    if y.nunique() < 2:
+    target_unique = y.nunique()
+    target_std = float(y.std()) if len(y) > 1 else 0.0
+    print(f'Target unique values: {target_unique}')
+    print(f'Target std: {target_std}')
+
+    if target_unique < 2 or np.isclose(target_std, 0.0):
         raise ValueError('Target variable has low variance; cannot train reliable models')
 
     x_train_df, x_eval_df, y_train_series, y_eval_series = train_test_split(
